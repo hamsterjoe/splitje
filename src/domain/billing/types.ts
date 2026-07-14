@@ -16,3 +16,24 @@ export interface EqualAllocationResult {
   allocations: EqualAllocation[];
   remainderParticipantIds: ParticipantId[];
 }
+
+export interface WeightedAllocationInput {
+  participantId: ParticipantId;
+  weight: number;
+}
+
+export interface WeightedAllocation {
+  participantId: ParticipantId;
+  weight: number;
+  baseAmountSen: Sen;
+  remainderAmountSen: 0 | 1;
+  amountSen: Sen;
+}
+
+export interface WeightedAllocationResult {
+  totalSen: Sen;
+  totalWeight: number;
+  allocatedTotalSen: Sen;
+  allocations: WeightedAllocation[];
+  remainderParticipantIds: ParticipantId[];
+}
