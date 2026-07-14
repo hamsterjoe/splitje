@@ -55,3 +55,32 @@ export interface ItemAllocationSummary {
   state: ItemAllocationState;
   allocations: ItemAllocationInput[];
 }
+
+export type BillAdjustmentType =
+  | "discount"
+  | "service_charge"
+  | "tax"
+  | "rounding"
+  | "other";
+
+export interface ReceiptItemAmount {
+  itemId: string;
+  lineTotalSen: Sen;
+}
+
+export interface ReceiptAdjustmentAmount {
+  adjustmentId: string;
+  type: BillAdjustmentType;
+  amountSen: Sen;
+}
+
+export interface ReceiptReconciliationResult {
+  printedTotalSen: Sen;
+  itemSubtotalSen: Sen;
+  adjustmentTotalSen: Sen;
+  calculatedTotalSen: Sen;
+  differenceSen: Sen;
+  isReconciled: boolean;
+  items: ReceiptItemAmount[];
+  adjustments: ReceiptAdjustmentAmount[];
+}
