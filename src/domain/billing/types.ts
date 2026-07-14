@@ -37,3 +37,21 @@ export interface WeightedAllocationResult {
   allocations: WeightedAllocation[];
   remainderParticipantIds: ParticipantId[];
 }
+
+export type ItemAllocationState =
+  | "unassigned"
+  | "partially_assigned"
+  | "fully_assigned";
+
+export interface ItemAllocationInput {
+  participantId: ParticipantId;
+  amountSen: Sen;
+}
+
+export interface ItemAllocationSummary {
+  itemTotalSen: Sen;
+  allocatedSen: Sen;
+  remainingSen: Sen;
+  state: ItemAllocationState;
+  allocations: ItemAllocationInput[];
+}
