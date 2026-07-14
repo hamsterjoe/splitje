@@ -84,3 +84,19 @@ export interface ReceiptReconciliationResult {
   items: ReceiptItemAmount[];
   adjustments: ReceiptAdjustmentAmount[];
 }
+
+export interface SignedWeightedAllocation {
+  participantId: ParticipantId;
+  weight: number;
+  baseAmountSen: Sen;
+  remainderAmountSen: -1 | 0 | 1;
+  amountSen: Sen;
+}
+
+export interface SignedWeightedAllocationResult {
+  totalSen: Sen;
+  totalWeight: number;
+  allocatedTotalSen: Sen;
+  allocations: SignedWeightedAllocation[];
+  remainderParticipantIds: ParticipantId[];
+}
