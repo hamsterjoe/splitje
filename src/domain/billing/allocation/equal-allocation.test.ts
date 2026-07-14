@@ -5,6 +5,40 @@ import { BillingDomainError } from "../errors";
 import { allocateEqual } from "./equal-allocation";
 
 describe("allocateEqual", () => {
+  it.each([-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects invalid totalSen: %s",
+    (totalSen) => {
+      expect(() => allocateEqual(totalSen, ["participant-a"])).toThrowError(
+        expect.objectContaining<Partial<BillingDomainError>>({
+          code: "INVALID_TOTAL_SEN",
+        }),
+      );
+    },
+  );
+
+  it("rejects an empty or whitespace-only participant ID", () => {
+    expect(() => allocateEqual(100, ["participant-a", "   "])).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_PARTICIPANT_ID",
+      }),
+    );
+  });
+
+  it("handles a zero-sen total without inventing money", () => {
+    const result = allocateEqual(0, [
+      "participant-b",
+      "participant-a",
+    ]);
+
+    expect(result.allocations.map((allocation) => allocation.amountSen)).toEqual([
+      0,
+      0,
+    ]);
+
+    expect(result.allocatedTotalSen).toBe(0);
+    expect(result.remainderParticipantIds).toEqual([]);
+  });
+
   it("splits an exactly divisible total equally", () => {
     const result = allocateEqual(300, [
       "participant-c",
