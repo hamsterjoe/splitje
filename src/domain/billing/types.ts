@@ -100,3 +100,40 @@ export interface SignedWeightedAllocationResult {
   allocations: SignedWeightedAllocation[];
   remainderParticipantIds: ParticipantId[];
 }
+
+export interface ParticipantItemAllocation {
+  itemId: string;
+  participantId: ParticipantId;
+  amountSen: Sen;
+}
+
+export interface ParticipantAdjustmentAllocation {
+  adjustmentId: string;
+  participantId: ParticipantId;
+  type: BillAdjustmentType;
+  amountSen: Sen;
+}
+
+export interface ParticipantAdjustmentTotals {
+  discountSen: Sen;
+  serviceChargeSen: Sen;
+  taxSen: Sen;
+  roundingSen: Sen;
+  otherSen: Sen;
+  totalSen: Sen;
+}
+
+export interface ParticipantFinancialSummary {
+  participantId: ParticipantId;
+  itemSubtotalSen: Sen;
+  adjustments: ParticipantAdjustmentTotals;
+  finalAmountSen: Sen;
+}
+
+export interface ParticipantFinancialSummaryResult {
+  participantSummaries: ParticipantFinancialSummary[];
+  itemAllocatedTotalSen: Sen;
+  adjustmentAllocatedTotalSen: Sen;
+  finalAllocatedTotalSen: Sen;
+  hasNegativeParticipantTotal: boolean;
+}
