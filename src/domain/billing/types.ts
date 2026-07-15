@@ -199,3 +199,25 @@ export interface LineTotalResult {
   overrideDifferenceSen: Sen;
   source: LineTotalSource;
 }
+
+export interface PercentageAllocationInput {
+  participantId: ParticipantId;
+  percentageBasisPoints: number;
+}
+
+export interface PercentageAllocation {
+  participantId: ParticipantId;
+  percentageBasisPoints: number;
+  baseAmountSen: Sen;
+  remainderAmountSen: 0 | 1;
+  amountSen: Sen;
+}
+
+export interface PercentageAllocationResult {
+  totalSen: Sen;
+  percentageTotalBasisPoints: number;
+  allocatedTotalSen: Sen;
+  unassignedSen: Sen;
+  allocations: PercentageAllocation[];
+  remainderParticipantIds: ParticipantId[];
+}

@@ -22,7 +22,9 @@ export type BillingErrorCode =
   | "DUPLICATE_ADJUSTMENT_ALLOCATION"
   | "INVALID_QUANTITY"
   | "INVALID_UNIT_PRICE"
-  | "INVALID_LINE_TOTAL_OVERRIDE";
+  | "INVALID_LINE_TOTAL_OVERRIDE"
+  | "INVALID_PERCENTAGE"
+  | "PERCENTAGE_EXCEEDS_TOTAL";
 
 export class BillingDomainError extends Error {
   constructor(
