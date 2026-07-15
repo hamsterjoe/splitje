@@ -284,3 +284,24 @@ export interface BillCalculationResult {
   participantResult: ParticipantFinancialSummaryResult;
   financialState: BillFinancialState;
 }
+
+export interface ProportionalAdjustmentBase {
+  participantId: ParticipantId;
+  itemSubtotalSen: Sen;
+}
+
+export interface ProportionalAdjustmentAllocation {
+  participantId: ParticipantId;
+  itemSubtotalSen: Sen;
+  baseAmountSen: Sen;
+  remainderAmountSen: -1 | 0 | 1;
+  amountSen: Sen;
+}
+
+export interface ProportionalAdjustmentResult {
+  adjustmentAmountSen: Sen;
+  eligibleSubtotalSen: Sen;
+  allocatedTotalSen: Sen;
+  allocations: ProportionalAdjustmentAllocation[];
+  remainderParticipantIds: ParticipantId[];
+}
