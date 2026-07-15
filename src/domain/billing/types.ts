@@ -392,6 +392,10 @@ export type AdjustmentAllocationPolicy =
       participantId: ParticipantId;
     }
   | {
+      method: "percentage";
+      percentages: PercentageAllocationInput[];
+    }
+  | {
       method: "custom";
       allocations: AdjustmentAllocationInput[];
     };
