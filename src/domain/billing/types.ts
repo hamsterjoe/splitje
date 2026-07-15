@@ -343,3 +343,37 @@ export interface AdjustmentBasesResult {
   eligibleAllocatedSubtotalSen: Sen;
   bases: ProportionalAdjustmentBase[];
 }
+
+export type AdjustmentCalculationBaseMode =
+  | "item_subtotal"
+  | "running_total";
+
+export interface OrderedRateAdjustmentInput {
+  adjustmentId: string;
+  type: BillAdjustmentType;
+  rateBasisPoints: number;
+  baseMode: AdjustmentCalculationBaseMode;
+  roundingMode?: RateRoundingMode;
+  manualAmountSen?: Sen | null;
+}
+
+export interface CalculatedOrderedRateAdjustment {
+  adjustmentId: string;
+  type: BillAdjustmentType;
+  rateBasisPoints: number;
+  baseMode: AdjustmentCalculationBaseMode;
+  calculationBaseSen: Sen;
+  roundingMode: RateRoundingMode;
+  computedAmountSen: Sen;
+  effectiveAmountSen: Sen;
+  overrideDifferenceSen: Sen;
+  source: RateAdjustmentAmountSource;
+  runningTotalAfterSen: Sen;
+}
+
+export interface OrderedRateAdjustmentsResult {
+  itemSubtotalSen: Sen;
+  adjustmentTotalSen: Sen;
+  finalTotalSen: Sen;
+  adjustments: CalculatedOrderedRateAdjustment[];
+}
