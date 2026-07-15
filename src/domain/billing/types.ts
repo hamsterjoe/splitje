@@ -377,3 +377,31 @@ export interface OrderedRateAdjustmentsResult {
   finalTotalSen: Sen;
   adjustments: CalculatedOrderedRateAdjustment[];
 }
+
+export type AdjustmentAllocationPolicy =
+  | {
+      method: "proportional";
+      bases: ProportionalAdjustmentBase[];
+    }
+  | {
+      method: "equal";
+      participantIds: ParticipantId[];
+    }
+  | {
+      method: "single";
+      participantId: ParticipantId;
+    }
+  | {
+      method: "custom";
+      allocations: AdjustmentAllocationInput[];
+    };
+
+export interface AdjustmentPolicyResult {
+  method: AdjustmentAllocationPolicy["method"];
+  adjustmentAmountSen: Sen;
+  allocatedTotalSen: Sen;
+  remainingSen: Sen;
+  state: AdjustmentAllocationState;
+  allocations: AdjustmentAllocationInput[];
+  remainderParticipantIds: ParticipantId[];
+}
