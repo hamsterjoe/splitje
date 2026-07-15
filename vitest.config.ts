@@ -10,6 +10,12 @@ export default defineConfig({
         "src/domain/billing/types.ts",
       ],
       reporter: ["text", "html", "json-summary"],
+      thresholds: {
+        statements: 95,
+        branches: 90,
+        functions: 100,
+        lines: 95,
+      },
     },
   },
 });
