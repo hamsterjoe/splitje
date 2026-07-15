@@ -24,7 +24,8 @@ export type BillingErrorCode =
   | "INVALID_UNIT_PRICE"
   | "INVALID_LINE_TOTAL_OVERRIDE"
   | "INVALID_PERCENTAGE"
-  | "PERCENTAGE_EXCEEDS_TOTAL";
+  | "PERCENTAGE_EXCEEDS_TOTAL"
+  | "QUANTITY_EXCEEDS_TOTAL";
 
 export class BillingDomainError extends Error {
   constructor(

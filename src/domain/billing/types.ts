@@ -221,3 +221,27 @@ export interface PercentageAllocationResult {
   allocations: PercentageAllocation[];
   remainderParticipantIds: ParticipantId[];
 }
+
+export interface QuantityAllocationInput {
+  participantId: ParticipantId;
+  quantity: number;
+}
+
+export interface QuantityAllocation {
+  participantId: ParticipantId;
+  quantity: number;
+  baseAmountSen: Sen;
+  remainderAmountSen: 0 | 1;
+  amountSen: Sen;
+}
+
+export interface QuantityAllocationResult {
+  totalSen: Sen;
+  itemQuantity: number;
+  assignedQuantity: number;
+  unassignedQuantity: number;
+  allocatedTotalSen: Sen;
+  unassignedSen: Sen;
+  allocations: QuantityAllocation[];
+  remainderParticipantIds: ParticipantId[];
+}
