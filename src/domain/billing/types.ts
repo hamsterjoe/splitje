@@ -245,3 +245,42 @@ export interface QuantityAllocationResult {
   allocations: QuantityAllocation[];
   remainderParticipantIds: ParticipantId[];
 }
+
+export interface BillCalculationItem {
+  itemId: string;
+  lineTotalSen: Sen;
+  allocations: ItemAllocationInput[];
+}
+
+export interface BillCalculationAdjustment {
+  adjustmentId: string;
+  type: BillAdjustmentType;
+  amountSen: Sen;
+  allocations: AdjustmentAllocationInput[];
+}
+
+export interface BillCalculationInput {
+  printedTotalSen: Sen;
+  participantIds: ParticipantId[];
+  items: BillCalculationItem[];
+  adjustments: BillCalculationAdjustment[];
+}
+
+export type IdentifiedItemAllocationSummary =
+  ItemAllocationSummary & {
+    itemId: string;
+  };
+
+export type IdentifiedAdjustmentAllocationSummary =
+  AdjustmentAllocationSummary & {
+    adjustmentId: string;
+    type: BillAdjustmentType;
+  };
+
+export interface BillCalculationResult {
+  receipt: ReceiptReconciliationResult;
+  itemStates: IdentifiedItemAllocationSummary[];
+  adjustmentStates: IdentifiedAdjustmentAllocationSummary[];
+  participantResult: ParticipantFinancialSummaryResult;
+  financialState: BillFinancialState;
+}
