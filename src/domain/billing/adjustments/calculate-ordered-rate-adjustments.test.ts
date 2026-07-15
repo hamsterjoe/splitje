@@ -220,4 +220,74 @@ describe("calculateOrderedRateAdjustments", () => {
       }),
     );
   });
+
+  it("rejects an invalid item subtotal", () => {
+    expect(() =>
+      calculateOrderedRateAdjustments(-1, []),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_ADJUSTMENT_BASE",
+      }),
+    );
+  });
+
+  it("rejects an invalid adjustment ID", () => {
+    expect(() =>
+      calculateOrderedRateAdjustments(
+        10_000,
+        [
+          {
+            adjustmentId: "   ",
+            type: "tax",
+            rateBasisPoints: 600,
+            baseMode: "item_subtotal",
+          },
+        ],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_ADJUSTMENT_ID",
+      }),
+    );
+  });
+
+  it("rejects an invalid calculation-base mode at runtime", () => {
+    expect(() =>
+      calculateOrderedRateAdjustments(
+        10_000,
+        [
+          {
+            adjustmentId: "tax",
+            type: "tax",
+            rateBasisPoints: 600,
+            baseMode: "unsupported" as never,
+          },
+        ],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_ADJUSTMENT_BASE_MODE",
+      }),
+    );
+  });
+
+  it("rejects a running total outside the safe-integer range", () => {
+    expect(() =>
+      calculateOrderedRateAdjustments(
+        Number.MAX_SAFE_INTEGER,
+        [
+          {
+            adjustmentId: "tax",
+            type: "tax",
+            rateBasisPoints: 1,
+            baseMode: "item_subtotal",
+          },
+        ],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "UNSAFE_CALCULATION",
+      }),
+    );
+  });
 });

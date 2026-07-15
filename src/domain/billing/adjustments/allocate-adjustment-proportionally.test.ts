@@ -300,4 +300,72 @@ describe("allocateAdjustmentProportionally", () => {
 
         expect(reversed).toEqual(forward);
     });
+
+    it("rejects an invalid adjustment amount", () => {
+        expect(() =>
+            allocateAdjustmentProportionally(
+                Number.POSITIVE_INFINITY,
+                [
+                    {
+                        participantId: "participant-a",
+                        itemSubtotalSen: 1_000,
+                    },
+                ],
+            ),
+        ).toThrowError(
+            expect.objectContaining<Partial<BillingDomainError>>({
+                code: "INVALID_ADJUSTMENT_AMOUNT",
+            }),
+        );
+    });
+
+    it("rejects an empty proportional base list", () => {
+        expect(() =>
+            allocateAdjustmentProportionally(100, []),
+        ).toThrowError(
+            expect.objectContaining<Partial<BillingDomainError>>({
+                code: "NO_PARTICIPANTS",
+            }),
+        );
+    });
+
+    it("rejects an invalid participant ID", () => {
+        expect(() =>
+            allocateAdjustmentProportionally(
+                100,
+                [
+                    {
+                        participantId: "   ",
+                        itemSubtotalSen: 1_000,
+                    },
+                ],
+            ),
+        ).toThrowError(
+            expect.objectContaining<Partial<BillingDomainError>>({
+                code: "INVALID_PARTICIPANT_ID",
+            }),
+        );
+    });
+
+    it("rejects a combined base outside the safe-integer range", () => {
+        expect(() =>
+            allocateAdjustmentProportionally(
+                100,
+                [
+                    {
+                        participantId: "participant-a",
+                        itemSubtotalSen: Number.MAX_SAFE_INTEGER,
+                    },
+                    {
+                        participantId: "participant-b",
+                        itemSubtotalSen: 1,
+                    },
+                ],
+            ),
+        ).toThrowError(
+            expect.objectContaining<Partial<BillingDomainError>>({
+                code: "UNSAFE_CALCULATION",
+            }),
+        );
+    });
 });
