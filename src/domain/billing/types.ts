@@ -180,3 +180,22 @@ export interface BillFinancialState {
   adjustmentAllocatedSen: Sen;
   adjustmentUnassignedSen: Sen;
 }
+
+export type LineTotalSource =
+  | "calculated"
+  | "manual_override";
+
+export interface CalculateLineTotalInput {
+  quantity: number;
+  unitPriceSen: Sen;
+  manualLineTotalSen?: Sen | null;
+}
+
+export interface LineTotalResult {
+  quantity: number;
+  unitPriceSen: Sen;
+  computedLineTotalSen: Sen;
+  effectiveLineTotalSen: Sen;
+  overrideDifferenceSen: Sen;
+  source: LineTotalSource;
+}
