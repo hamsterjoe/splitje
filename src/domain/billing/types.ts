@@ -305,3 +305,29 @@ export interface ProportionalAdjustmentResult {
   allocations: ProportionalAdjustmentAllocation[];
   remainderParticipantIds: ParticipantId[];
 }
+
+export type RateRoundingMode =
+  | "down"
+  | "half_up"
+  | "up";
+
+export type RateAdjustmentAmountSource =
+  | "calculated"
+  | "manual_override";
+
+export interface CalculateRateAdjustmentInput {
+  baseAmountSen: Sen;
+  rateBasisPoints: number;
+  roundingMode?: RateRoundingMode;
+  manualAmountSen?: Sen | null;
+}
+
+export interface RateAdjustmentResult {
+  baseAmountSen: Sen;
+  rateBasisPoints: number;
+  roundingMode: RateRoundingMode;
+  computedAmountSen: Sen;
+  effectiveAmountSen: Sen;
+  overrideDifferenceSen: Sen;
+  source: RateAdjustmentAmountSource;
+}
