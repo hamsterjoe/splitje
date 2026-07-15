@@ -14,7 +14,7 @@
     "db:new-migration": "supabase migration new",
     "db:push": "supabase db push",
     "db:migrations": "supabase migration list",
-    "db:types": "supabase gen types typescript --linked > src/infrastructure/supabase/database.types.ts"
+    "db:types": "supabase gen types typescript --linked --schema public > src/infrastructure/supabase/database.types.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",

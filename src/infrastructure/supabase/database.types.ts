@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       adjustment_allocations: {
@@ -440,6 +415,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_draft_bill: {
+        Args: {
+          p_merchant_name?: string
+          p_owner_display_name?: string
+          p_printed_total_sen?: number
+        }
+        Returns: {
+          bill_id: string
+          owner_participant_id: string
+        }[]
+      }
       is_bill_owner: { Args: { target_bill_id: string }; Returns: boolean }
     }
     Enums: {
@@ -569,9 +555,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
