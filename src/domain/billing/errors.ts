@@ -31,7 +31,9 @@ export type BillingErrorCode =
   | "INVALID_RATE"
   | "INVALID_ADJUSTMENT_BASE"
   | "INVALID_ADJUSTMENT_OVERRIDE"
-  | "ADJUSTMENT_OVERRIDE_SIGN_MISMATCH";
+  | "ADJUSTMENT_OVERRIDE_SIGN_MISMATCH"
+  | "UNKNOWN_ITEM_ID"
+  | "NO_ELIGIBLE_ITEMS";
 
 export class BillingDomainError extends Error {
   constructor(

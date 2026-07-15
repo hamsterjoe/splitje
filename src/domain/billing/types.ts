@@ -331,3 +331,15 @@ export interface RateAdjustmentResult {
   overrideDifferenceSen: Sen;
   source: RateAdjustmentAmountSource;
 }
+
+export interface CalculateAdjustmentBasesInput {
+  participantIds: ParticipantId[];
+  items: BillCalculationItem[];
+  applicableItemIds?: string[] | null;
+}
+
+export interface AdjustmentBasesResult {
+  applicableItemIds: string[];
+  eligibleAllocatedSubtotalSen: Sen;
+  bases: ProportionalAdjustmentBase[];
+}
