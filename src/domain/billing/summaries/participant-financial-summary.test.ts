@@ -309,6 +309,156 @@ describe("calculateParticipantFinancialSummaries", () => {
     expect(reversed).toEqual(forward);
   });
 
+  it("rejects an empty participant list", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        [],
+        [],
+        [],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "NO_PARTICIPANTS",
+      }),
+    );
+  });
+
+  it("rejects an invalid participant ID", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["   "],
+        [],
+        [],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_PARTICIPANT_ID",
+      }),
+    );
+  });
+
+  it("rejects duplicate bill participant IDs", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["participant-a", "participant-a"],
+        [],
+        [],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "DUPLICATE_PARTICIPANT_ID",
+      }),
+    );
+  });
+
+  it("rejects an invalid item ID", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["participant-a"],
+        [
+          {
+            itemId: "   ",
+            participantId: "participant-a",
+            amountSen: 100,
+          },
+        ],
+        [],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_ITEM_ID",
+      }),
+    );
+  });
+
+  it("rejects an invalid adjustment ID", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["participant-a"],
+        [],
+        [
+          {
+            adjustmentId: "",
+            participantId: "participant-a",
+            type: "tax",
+            amountSen: 100,
+          },
+        ],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_ADJUSTMENT_ID",
+      }),
+    );
+  });
+
+  it("rejects an adjustment for an unknown participant", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["participant-a"],
+        [],
+        [
+          {
+            adjustmentId: "tax-a",
+            participantId: "participant-unknown",
+            type: "tax",
+            amountSen: 100,
+          },
+        ],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "UNKNOWN_PARTICIPANT_ID",
+      }),
+    );
+  });
+
+  it("rejects an unsafe adjustment allocation", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["participant-a"],
+        [],
+        [
+          {
+            adjustmentId: "tax-a",
+            participantId: "participant-a",
+            type: "tax",
+            amountSen: Number.POSITIVE_INFINITY,
+          },
+        ],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_ADJUSTMENT_ALLOCATION_AMOUNT",
+      }),
+    );
+  });
+
+  it("rejects participant summary arithmetic outside the safe range", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["participant-a"],
+        [
+          {
+            itemId: "item-a",
+            participantId: "participant-a",
+            amountSen: Number.MAX_SAFE_INTEGER,
+          },
+          {
+            itemId: "item-b",
+            participantId: "participant-a",
+            amountSen: 1,
+          },
+        ],
+        [],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "UNSAFE_CALCULATION",
+      }),
+    );
+  });
+
   it("preserves the total across generated participant summaries", () => {
     fc.assert(
       fc.property(
@@ -394,6 +544,74 @@ describe("calculateParticipantFinancialSummaries", () => {
           );
         },
       ),
+    );
+  });
+
+  it("rejects an invalid participant ID in an item allocation", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["participant-a"],
+        [
+          {
+            itemId: "item-a",
+            participantId: "   ",
+            amountSen: 100,
+          },
+        ],
+        [],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_PARTICIPANT_ID",
+      }),
+    );
+  });
+
+  it("rejects an invalid participant ID in an adjustment allocation", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["participant-a"],
+        [],
+        [
+          {
+            adjustmentId: "tax-a",
+            participantId: "",
+            type: "tax",
+            amountSen: 100,
+          },
+        ],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "INVALID_PARTICIPANT_ID",
+      }),
+    );
+  });
+
+  it("rejects unsafe aggregated adjustment arithmetic", () => {
+    expect(() =>
+      calculateParticipantFinancialSummaries(
+        ["participant-a"],
+        [],
+        [
+          {
+            adjustmentId: "tax-a",
+            participantId: "participant-a",
+            type: "tax",
+            amountSen: Number.MAX_SAFE_INTEGER,
+          },
+          {
+            adjustmentId: "tax-b",
+            participantId: "participant-a",
+            type: "tax",
+            amountSen: 1,
+          },
+        ],
+      ),
+    ).toThrowError(
+      expect.objectContaining<Partial<BillingDomainError>>({
+        code: "UNSAFE_CALCULATION",
+      }),
     );
   });
 });
