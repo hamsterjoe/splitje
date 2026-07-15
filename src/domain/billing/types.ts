@@ -101,6 +101,24 @@ export interface SignedWeightedAllocationResult {
   remainderParticipantIds: ParticipantId[];
 }
 
+export type AdjustmentAllocationState =
+  | "unassigned"
+  | "partially_assigned"
+  | "fully_assigned";
+
+export interface AdjustmentAllocationInput {
+  participantId: ParticipantId;
+  amountSen: Sen;
+}
+
+export interface AdjustmentAllocationSummary {
+  adjustmentAmountSen: Sen;
+  allocatedSen: Sen;
+  remainingSen: Sen;
+  state: AdjustmentAllocationState;
+  allocations: AdjustmentAllocationInput[];
+}
+
 export interface ParticipantItemAllocation {
   itemId: string;
   participantId: ParticipantId;
@@ -136,4 +154,29 @@ export interface ParticipantFinancialSummaryResult {
   adjustmentAllocatedTotalSen: Sen;
   finalAllocatedTotalSen: Sen;
   hasNegativeParticipantTotal: boolean;
+}
+
+export type BillFinalisationBlocker =
+  | "no_items"
+  | "receipt_not_reconciled"
+  | "source_totals_mismatch"
+  | "items_not_fully_assigned"
+  | "adjustments_not_fully_assigned"
+  | "participant_totals_mismatch"
+  | "assignment_total_mismatch"
+  | "negative_participant_total";
+
+export interface BillFinancialState {
+  canFinalise: boolean;
+  blockingReasons: BillFinalisationBlocker[];
+
+  calculatedReceiptTotalSen: Sen;
+  participantFinalTotalSen: Sen;
+  assignmentDifferenceSen: Sen;
+
+  itemAllocatedSen: Sen;
+  itemUnassignedSen: Sen;
+
+  adjustmentAllocatedSen: Sen;
+  adjustmentUnassignedSen: Sen;
 }
