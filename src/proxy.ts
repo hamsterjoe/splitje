@@ -74,16 +74,20 @@ export async function proxy(
       request.nextUrl.pathname,
     )
   ) {
-    const loginUrl = request.nextUrl.clone();
+    const startUrl = request.nextUrl.clone();
 
-    loginUrl.pathname = "/login";
-    loginUrl.searchParams.set(
+    startUrl.pathname = "/";
+    startUrl.searchParams.set(
+      "reason",
+      "session_required",
+    );
+    startUrl.searchParams.set(
       "next",
       `${request.nextUrl.pathname}${request.nextUrl.search}`,
     );
-
+    
     const redirectResponse =
-      NextResponse.redirect(loginUrl);
+      NextResponse.redirect(startUrl);
 
     for (const cookie of supabaseResponse.cookies.getAll()) {
       redirectResponse.cookies.set(cookie);
