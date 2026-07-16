@@ -7,19 +7,34 @@ export default function HomePage() {
       className="min-h-dvh bg-background"
     >
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-5 py-10 sm:px-6">
-        <header className="mb-8 space-y-4">
-          <p className="text-sm font-medium text-primary">
+        <header className="mb-5 space-y-5">
+          <div className="text-sm font-semibold tracking-tight text-primary">
             SplitJe
-          </p>
+          </div>
 
-          <h1 className="text-pretty text-4xl font-semibold tracking-tight">
-            Split the Bill, Not the Mood.
-          </h1>
+          {/* import Image from "next/image"; -- to replace with svg logo later
 
-          <p className="text-pretty text-base leading-7 text-muted-foreground">
-            Create a bill, add the people at the table,
-            and divide by order.
-          </p>
+            <Image
+              src="/brand/logo.png"
+              alt="SplitJe"
+              width={132}
+              height={40}
+              priority
+              className="h-9 w-auto"
+            />
+            */}
+
+          <div className="space-y-3">
+            <h1 className="font-heading text-3xl font-bold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-5xl">
+              Split the bill,
+              <br />
+              not the mood.
+            </h1>
+
+            <p className="max-w-sm text-base leading-6 text-muted-foreground">
+              Create a shared bill in seconds.
+            </p>
+          </div>
         </header>
 
         <CreateBillForm />

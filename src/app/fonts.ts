@@ -31,6 +31,11 @@ export const fedro = localFont({
       weight: "400",
       style: "normal",
     },
+    {
+      path: "../assets/fonts/fedro/Fedro-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
   ],
   variable: "--font-fedro",
   display: "swap",
