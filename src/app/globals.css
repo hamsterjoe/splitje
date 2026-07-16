@@ -7,9 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-pp-neue-montreal);
+  --font-display: var(--font-fedro);
+  --font-heading: var(--font-fedro);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,48 +40,68 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 0.75rem;
+
+  --background: #faf8f5;
+  --foreground: #1f292d;
+
+  --card: #fffefd;
+  --card-foreground: #1f292d;
+
+  --popover: #fffefd;
+  --popover-foreground: #1f292d;
+
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f1ede7;
+  --secondary-foreground: #273338;
+
+  --muted: #f4f1ec;
+  --muted-foreground: #66706d;
+
+  --accent: #dff3ef;
+  --accent-foreground: #115e59;
+
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+
+  --border: #e6e1da;
+  --input: #d5cec5;
+  --ring: #14b8a6;
+
+  --surface-raised: #fffefd;
+  --surface-emphasized: #f4f1ec;
+
+  --text-tertiary: #89918e;
+  --border-strong: #d5cec5;
+
+  --primary-hover: #115e59;
+  --primary-active: #134e4a;
+  --primary-soft: #dff3ef;
+
+  --success: #15803d;
+  --warning: #b45309;
+
+  --gradient-brand: linear-gradient(135deg,
+      #115e59 0%,
+      #0f766e 52%,
+      #155e75 100%);
+
+  --shadow-card:
+    0 1px 2px rgb(31 41 45 / 4%),
+    0 4px 12px rgb(31 41 45 / 3%);
+
+  --shadow-overlay:
+    0 8px 30px rgb(31 41 45 / 10%),
+    0 2px 8px rgb(31 41 45 / 6%);
 }
 
 .dark {
@@ -121,10 +142,51 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
-    @apply font-sans;
+    background: var(--background);
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground;
+    min-height: 100dvh;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  ::selection {
+    color: var(--primary-foreground);
+    background: var(--primary);
+  }
+}
+
+@layer utilities {
+  .brand-gradient {
+    background-image: var(--gradient-brand);
+  }
+
+  .font-display {
+    font-family: var(--font-fedro), var(--font-pp-neue-montreal), sans-serif;
+  }
+
+  .font-heading {
+    font-family: var(--font-fedro), var(--font-pp-neue-montreal), sans-serif;
+  }
+
+  .tabular-money {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-overlay {
+    box-shadow: var(--shadow-overlay);
   }
 }

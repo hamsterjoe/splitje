@@ -1,19 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { fedro, ppNeueMontreal } from "./fonts"; 
 import "./globals.css";
 import { cn } from "@/lib/utils";
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -28,9 +16,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
-    >
-      <body className="min-h-full flex flex-col">
+      className={cn(
+        "h-full",
+        "antialiased",
+        ppNeueMontreal.variable,
+        fedro.variable,
+        "font-sans"
+      )}    >
+      <body className="font-sans antialiased min-h-full flex flex-col">
         <a
           href="#main-content"
           className="fixed start-4 top-4 z-50 -translate-y-24 rounded-md bg-background px-4 py-3 font-medium shadow-md transition-transform focus-visible:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
