@@ -1,10 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import {
-  initialCreateBillActionState,
-} from "@/app/create-bill-action-state";
+
 import { createBillAction } from "@/app/create-bill-action";
+import { initialCreateBillActionState } from "@/app/create-bill-action-state";
 import { CreateBillSubmitButton } from "@/components/create-bill-submit-button";
 import {
   Card,
@@ -26,32 +25,33 @@ export function CreateBillForm() {
   const [ownerNameTouched, setOwnerNameTouched] = useState(false);
 
   const ownerServerError =
-    state.fieldErrors?.ownerDisplayName?.[0];
+    state.fieldErrors?.ownerDisplayName;
 
   const ownerLocalError =
     ownerNameTouched && ownerDisplayName.trim().length === 0
       ? "Enter your name."
       : undefined;
 
-  const ownerError = ownerLocalError ?? ownerServerError;
+  const ownerError = ownerNameTouched
+    ? ownerLocalError
+    : ownerServerError;
 
   const merchantError =
-    state.fieldErrors.merchantName;
+    state.fieldErrors?.merchantName;
 
   return (
-    <Card className="w-full border-border/80 shadow-sm">
-      <CardHeader className="space-y-2">
-        <CardTitle className="text-xl">
-          Start a New Bill
+    <Card className="w-full gap-0 rounded-2xl border-border bg-card py-0 shadow-card">
+      <CardHeader className="space-y-1.5 px-5 pt-5 pb-0 sm:px-6 sm:pt-6">
+        <CardTitle className="text-xl font-semibold tracking-[-0.02em]">
+          Create a bill
         </CardTitle>
 
-        <CardDescription className="text-pretty">
-          No account required. Your draft will be
-          saved to this browser.
+        <CardDescription className="text-sm leading-5">
+          You can add people and items next.
         </CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="px-5 pt-6 pb-5 sm:px-6 sm:pb-6">
         <form
           action={formAction}
           className="space-y-5"
@@ -79,10 +79,11 @@ export function CreateBillForm() {
               className="
                 h-11 bg-card
                 aria-invalid:border-destructive
-                aria-invalid:ring-destructive/20    
+                aria-invalid:ring-destructive/20
               "
               onChange={(event) => {
                 setOwnerDisplayName(event.target.value);
+                setOwnerNameTouched(true);
               }}
               onBlur={() => {
                 setOwnerNameTouched(true);
@@ -97,14 +98,14 @@ export function CreateBillForm() {
               <p
                 id="ownerDisplayName-error"
                 role="alert"
-                className="text-sm text-destructive"
+                className="text-sm leading-5 text-destructive"
               >
                 {ownerError}
               </p>
             ) : (
               <p
                 id="ownerDisplayName-help"
-                className="text-sm text-muted-foreground"
+                className="text-sm leading-5 text-muted-foreground"
               >
                 Shown to everyone on this bill.
               </p>
@@ -113,9 +114,9 @@ export function CreateBillForm() {
 
           <div className="space-y-2">
             <Label htmlFor="merchantName">
-              Restaurant Name
-              <span className="ms-1 text-muted-foreground">
-                (Optional)
+              Restaurant name
+              <span className="ms-1 font-normal text-muted-foreground">
+                (optional)
               </span>
             </Label>
 
@@ -124,7 +125,7 @@ export function CreateBillForm() {
               name="merchantName"
               type="text"
               autoComplete="off"
-              placeholder="e.g. Nasi House…"
+              placeholder="e.g. Nasi House"
               maxLength={200}
               aria-invalid={Boolean(merchantError)}
               aria-describedby={
@@ -132,12 +133,18 @@ export function CreateBillForm() {
                   ? "merchantName-error"
                   : undefined
               }
+              className="
+                h-11 bg-card
+                aria-invalid:border-destructive
+                aria-invalid:ring-destructive/20
+              "
             />
 
             {merchantError ? (
               <p
                 id="merchantName-error"
-                className="text-sm text-destructive"
+                role="alert"
+                className="text-sm leading-5 text-destructive"
               >
                 {merchantError}
               </p>
@@ -147,10 +154,12 @@ export function CreateBillForm() {
           <div
             aria-live="polite"
             aria-atomic="true"
-            className="min-h-5"
           >
             {state.message ? (
-              <p className="text-sm text-destructive">
+              <p
+                role="alert"
+                className="text-sm leading-5 text-destructive"
+              >
                 {state.message}
               </p>
             ) : null}

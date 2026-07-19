@@ -2,30 +2,15 @@ import { CreateBillForm } from "@/components/create-bill-form";
 
 export default function HomePage() {
   return (
-    <main
-      id="main-content"
-      className="min-h-dvh bg-background"
-    >
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-5 py-10 sm:px-6">
-        <header className="mb-5 space-y-5">
-          <div className="text-sm font-semibold tracking-tight text-primary">
+    <main className="min-h-svh bg-background px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-8">
+        <header className="space-y-5">
+          <p className="text-sm font-semibold tracking-[-0.01em] text-[var(--brand)]">
             SplitJe
-          </div>
-
-          {/* import Image from "next/image"; -- to replace with svg logo later
-
-            <Image
-              src="/brand/logo.png"
-              alt="SplitJe"
-              width={132}
-              height={40}
-              priority
-              className="h-9 w-auto"
-            />
-            */}
+          </p>
 
           <div className="space-y-3">
-            <h1 className="font-heading text-3xl font-bold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-5xl">
+            <h1 className="font-heading text-[2.75rem] font-bold leading-[0.98] tracking-[-0.035em] text-foreground sm:text-5xl">
               Split the bill,
               <br />
               not the mood.
@@ -38,13 +23,19 @@ export default function HomePage() {
         </header>
 
         <CreateBillForm />
-
-        <p className="mt-6 text-pretty text-center text-sm leading-6 text-muted-foreground">
-          Draft ownership is initially tied to this
-          browser. Account recovery will remain
-          optional.
-        </p>
       </div>
     </main>
   );
 }
+
+{/* import Image from "next/image"; -- to replace with svg logo later
+
+  <Image
+    src="/brand/logo.png"
+    alt="SplitJe"
+    width={132}
+    height={40}
+    priority
+    className="h-9 w-auto"
+  />
+  */}

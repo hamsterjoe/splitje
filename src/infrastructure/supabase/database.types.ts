@@ -415,6 +415,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_bill_participant: {
+        Args: { p_bill_id: string; p_display_name: string }
+        Returns: {
+          participant_id: string
+        }[]
+      }
       create_draft_bill: {
         Args: {
           p_merchant_name?: string
