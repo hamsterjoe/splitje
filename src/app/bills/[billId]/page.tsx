@@ -9,6 +9,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { getServerOwnerBill } from "@/infrastructure/supabase/billing/get-server-owner-bill";
+import { AddParticipantForm } from "@/components/add-participant-form";
 
 interface BillPageProps {
     params: Promise<{
@@ -116,32 +117,40 @@ export default async function BillPage({
                         </CardHeader>
 
                         <CardContent>
-                            {bill.participants.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    No people have been added yet.
-                                </p>
-                            ) : (
-                                <ul className="flex flex-col divide-y">
-                                    {bill.participants.map(
-                                        (participant) => (
-                                            <li
-                                                key={participant.id}
-                                                className="flex min-h-14 items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
-                                            >
-                                                <span className="min-w-0 break-words font-medium">
-                                                    {participant.displayName}
-                                                </span>
-
-                                                {participant.isOwner ? (
-                                                    <span className="shrink-0 text-sm text-muted-foreground">
-                                                        Owner
+                            <div className="flex flex-col gap-5">
+                                {bill.participants.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        No people have been added yet.
+                                    </p>
+                                ) : (
+                                    <ul className="flex flex-col divide-y">
+                                        {bill.participants.map(
+                                            (participant) => (
+                                                <li
+                                                    key={participant.id}
+                                                    className="flex min-h-14 items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                                                >
+                                                    <span className="min-w-0 break-words font-medium">
+                                                        {participant.displayName}
                                                     </span>
-                                                ) : null}
-                                            </li>
-                                        ),
-                                    )}
-                                </ul>
-                            )}
+
+                                                    {participant.isOwner ? (
+                                                        <span className="shrink-0 text-sm text-muted-foreground">
+                                                            Owner
+                                                        </span>
+                                                    ) : null}
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                )}
+
+                                <div className="border-t pt-5">
+                                    <AddParticipantForm
+                                        billId={bill.id}
+                                    />
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </section>
