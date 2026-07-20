@@ -415,6 +415,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_bill_adjustment: {
+        Args: {
+          p_amount_sen: number
+          p_bill_id: string
+          p_label: string
+          p_type: string
+        }
+        Returns: {
+          adjustment_id: string
+        }[]
+      }
       add_bill_item: {
         Args: {
           p_bill_id: string
