@@ -11,6 +11,7 @@ import {
 import { getServerOwnerBill } from "@/infrastructure/supabase/billing/get-server-owner-bill";
 import { AddParticipantForm } from "@/components/add-participant-form";
 import { AddItemForm } from "@/components/add-item-form";
+import { UpdatePrintedTotalForm } from "@/components/update-printed-total-form";
 
 interface BillPageProps {
     params: Promise<{
@@ -75,31 +76,45 @@ export default async function BillPage({
                             </CardDescription>
                         </CardHeader>
 
-                        <CardContent className="grid gap-4 sm:grid-cols-2">
-                            <div className="rounded-lg border bg-muted/30 p-4">
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    Printed total
-                                </p>
+                        <CardContent>
+                            <div className="flex flex-col gap-5">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="rounded-lg border bg-muted/30 p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Printed total
+                                        </p>
 
-                                <p className="mt-1 text-2xl font-semibold tabular-nums">
-                                    {formatMoney(
-                                        bill.printedTotalSen,
-                                        bill.currency,
-                                    )}
-                                </p>
-                            </div>
+                                        <p className="mt-1 text-2xl font-semibold tabular-nums">
+                                            {formatMoney(
+                                                bill.printedTotalSen,
+                                                bill.currency,
+                                            )}
+                                        </p>
+                                    </div>
 
-                            <div className="rounded-lg border bg-muted/30 p-4">
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    Currency
-                                </p>
+                                    <div className="rounded-lg border bg-muted/30 p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Currency
+                                        </p>
 
-                                <p
-                                    className="mt-1 text-2xl font-semibold"
-                                    translate="no"
-                                >
-                                    {bill.currency}
-                                </p>
+                                        <p
+                                            className="mt-1 text-2xl font-semibold"
+                                            translate="no"
+                                        >
+                                            {bill.currency}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="border-t pt-5">
+                                    <UpdatePrintedTotalForm
+                                        billId={bill.id}
+                                        rowVersion={bill.rowVersion}
+                                        printedTotalSen={
+                                            bill.printedTotalSen
+                                        }
+                                    />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
