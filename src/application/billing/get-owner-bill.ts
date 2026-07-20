@@ -13,6 +13,18 @@ export interface OwnerBillParticipant {
   updatedAt: string;
 }
 
+export interface OwnerBillItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPriceSen: number;
+  manualLineTotalSen: number | null;
+  lineTotalSen: number;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface OwnerBill {
   id: string;
   merchantName: string | null;
@@ -26,16 +38,17 @@ export interface OwnerBill {
   finalisedAt: string | null;
   archivedAt: string | null;
   participants: OwnerBillParticipant[];
+  items: OwnerBillItem[];
 }
 
 export type GetOwnerBillRecordResult =
   | {
-      success: true;
-      bill: OwnerBill | null;
-    }
+    success: true;
+    bill: OwnerBill | null;
+  }
   | {
-      success: false;
-    };
+    success: false;
+  };
 
 export interface GetOwnerBillDependencies {
   getOwnerBillRecord(
@@ -45,21 +58,21 @@ export interface GetOwnerBillDependencies {
 
 export type GetOwnerBillResult =
   | {
-      success: true;
-      bill: OwnerBill;
-    }
+    success: true;
+    bill: OwnerBill;
+  }
   | {
-      success: false;
-      error:
-        | {
-            type: "not_found";
-          }
-        | {
-            type: "database_error";
-            code: "GET_OWNER_BILL_FAILED";
-            message: string;
-          };
+    success: false;
+    error:
+    | {
+      type: "not_found";
+    }
+    | {
+      type: "database_error";
+      code: "GET_OWNER_BILL_FAILED";
+      message: string;
     };
+  };
 
 export async function getOwnerBill(
   input: unknown,
