@@ -156,7 +156,7 @@ describe(
                 });
 
             expect(result).toMatchObject({
-                adjustmentSubtotalSen: 0,
+                adjustmentTotalSen: 0,
                 calculatedTotalSen: 2_500,
                 differenceSen: 1,
                 isReconciled: false,

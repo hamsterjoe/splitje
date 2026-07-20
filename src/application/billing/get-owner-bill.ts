@@ -50,6 +50,7 @@ export interface OwnerBill {
   archivedAt: string | null;
   participants: OwnerBillParticipant[];
   items: OwnerBillItem[];
+  adjustments: OwnerBillAdjustment[];
 }
 
 export type GetOwnerBillRecordResult =
