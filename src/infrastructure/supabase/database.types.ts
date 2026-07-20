@@ -445,6 +445,16 @@ export type Database = {
         }[]
       }
       is_bill_owner: { Args: { target_bill_id: string }; Returns: boolean }
+      update_bill_printed_total: {
+        Args: {
+          p_bill_id: string
+          p_expected_row_version: number
+          p_printed_total_sen: number
+        }
+        Returns: {
+          updated_row_version: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
