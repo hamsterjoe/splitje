@@ -20,6 +20,9 @@ const ownerParticipantId =
 const itemId =
   "61aab4ba-1d80-41df-a157-a2daf831df6a";
 
+const adjustmentId =
+  "a715ef81-d7da-4997-b0e7-98dd5d16bded";
+
 const ownerBill: OwnerBill = {
   id: billId,
   merchantName: "Restaurant A",
@@ -58,6 +61,19 @@ const ownerBill: OwnerBill = {
         "2026-07-19T08:05:00.000Z",
       updatedAt:
         "2026-07-19T08:05:00.000Z",
+    },
+  ],
+  adjustments: [
+    {
+      id: adjustmentId,
+      type: "tax",
+      label: "SST",
+      amountSen: 150,
+      sortOrder: 0,
+      createdAt:
+        "2026-07-19T08:10:00.000Z",
+      updatedAt:
+        "2026-07-19T08:10:00.000Z",
     },
   ],
 };

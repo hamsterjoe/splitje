@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BillAdjustmentType } from "@/domain/billing/types";
 
 const billIdSchema = z.string().uuid();
 
@@ -20,6 +21,16 @@ export interface OwnerBillItem {
   unitPriceSen: number;
   manualLineTotalSen: number | null;
   lineTotalSen: number;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OwnerBillAdjustment {
+  id: string;
+  type: BillAdjustmentType;
+  label: string;
+  amountSen: number;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;

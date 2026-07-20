@@ -145,7 +145,7 @@ export default async function BillPage({
 
                         <CardContent>
                             <div className="flex flex-col gap-5">
-                                <div className="grid gap-4 sm:grid-cols-3">
+                                <div className="grid gap-4 sm:grid-cols-2">
                                     <div className="rounded-lg border bg-muted/30 p-4">
                                         <p className="text-sm font-medium text-muted-foreground">
                                             Item subtotal
@@ -154,6 +154,19 @@ export default async function BillPage({
                                         <p className="mt-1 text-xl font-semibold tabular-nums">
                                             {formatMoney(
                                                 reconciliation.itemSubtotalSen,
+                                                bill.currency,
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-lg border bg-muted/30 p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Adjustments
+                                        </p>
+
+                                        <p className="mt-1 text-xl font-semibold tabular-nums">
+                                            {formatSignedMoney(
+                                                reconciliation.adjustmentTotalSen,
                                                 bill.currency,
                                             )}
                                         </p>

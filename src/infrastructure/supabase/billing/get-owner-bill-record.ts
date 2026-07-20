@@ -4,10 +4,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
   GetOwnerBillRecordResult,
+  OwnerBillAdjustment,
   OwnerBillItem,
   OwnerBillParticipant,
 } from "../../../application/billing/get-owner-bill";
 import type { Database } from "../database.types";
+import type { BillAdjustmentType } from "@/domain/billing/types";
 
 export async function getOwnerBillRecord(
   supabase: SupabaseClient<Database>,
@@ -44,6 +46,15 @@ export async function getOwnerBillRecord(
       unit_price_sen,
       manual_line_total_sen,
       line_total_sen,
+      sort_order,
+      created_at,
+      updated_at
+    ),
+    bill_adjustments (
+      id,
+      type,
+      label,
+      amount_sen,
       sort_order,
       created_at,
       updated_at
@@ -95,6 +106,45 @@ export async function getOwnerBillRecord(
       }))
       .sort(compareItems);
 
+  const adjustments: OwnerBillAdjustment[] =
+    data.bill_adjustments
+      .map((adjustment) => {
+        if (
+          !isBillAdjustmentType(
+            adjustment.type,
+          )
+        ) {
+          throw new Error(
+            "Invalid persisted adjustment type.",
+          );
+        }
+
+        return {
+          id: adjustment.id,
+          type: adjustment.type,
+          label: adjustment.label,
+          amountSen: adjustment.amount_sen,
+          sortOrder: adjustment.sort_order,
+          createdAt: adjustment.created_at,
+          updatedAt: adjustment.updated_at,
+        };
+      })
+      .sort(compareAdjustments);
+
+  const hasInvalidAdjustmentType =
+    data.bill_adjustments.some(
+      (adjustment) =>
+        !isBillAdjustmentType(
+          adjustment.type,
+        ),
+    );
+
+  if (hasInvalidAdjustmentType) {
+    return {
+      success: false,
+    };
+  }
+
   return {
     success: true,
     bill: {
@@ -111,8 +161,44 @@ export async function getOwnerBillRecord(
       archivedAt: data.archived_at,
       participants,
       items,
+      adjustments,
     },
   };
+}
+
+function compareAdjustments(
+  left: OwnerBillAdjustment,
+  right: OwnerBillAdjustment,
+): number {
+  const sortOrderDifference =
+    left.sortOrder - right.sortOrder;
+
+  if (sortOrderDifference !== 0) {
+    return sortOrderDifference;
+  }
+
+  const creationTimeDifference =
+    left.createdAt.localeCompare(
+      right.createdAt,
+    );
+
+  if (creationTimeDifference !== 0) {
+    return creationTimeDifference;
+  }
+
+  return left.id.localeCompare(right.id);
+}
+
+function isBillAdjustmentType(
+  value: string,
+): value is BillAdjustmentType {
+  return (
+    value === "discount" ||
+    value === "service_charge" ||
+    value === "tax" ||
+    value === "rounding" ||
+    value === "other"
+  );
 }
 
 function compareParticipants(
