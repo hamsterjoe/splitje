@@ -12,6 +12,7 @@ import { parseRinggitInput } from "@/application/billing/validation/parse-ringgi
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UpdatePrintedTotalSubmitButton } from "@/components/update-printed-total-submit-button";
+import { formatRinggitDigitInput } from "@/application/billing/validation/format-ringgit-digit-input";
 
 interface UpdatePrintedTotalFormProps {
     billId: string;
@@ -22,16 +23,9 @@ interface UpdatePrintedTotalFormProps {
 function formatSenForInput(
     amountSen: number,
 ): string {
-    const wholeRinggit = Math.floor(
-        amountSen / 100,
+    return formatRinggitDigitInput(
+        amountSen.toString(),
     );
-
-    const remainingSen =
-        amountSen % 100;
-
-    return `${wholeRinggit}.${remainingSen
-        .toString()
-        .padStart(2, "0")}`;
 }
 
 export function UpdatePrintedTotalForm({
@@ -61,10 +55,6 @@ export function UpdatePrintedTotalForm({
         setEditedSinceSubmission,
     ] = useState(false);
 
-    /*
-     * A successful route revalidation supplies the latest
-     * persisted total and row version as new props.
-     */
     useEffect(() => {
         setPrintedTotal(
             formatSenForInput(
@@ -126,12 +116,12 @@ export function UpdatePrintedTotalForm({
                         id="printedTotal"
                         name="printedTotal"
                         type="text"
-                        inputMode="decimal"
+                        inputMode="numeric"
                         autoComplete="off"
                         enterKeyHint="done"
                         spellCheck={false}
-                        placeholder="0.00"
                         required
+                        maxLength={11}
                         value={printedTotal}
                         aria-invalid={Boolean(
                             printedTotalError,
@@ -149,7 +139,9 @@ export function UpdatePrintedTotalForm({
             "
                         onChange={(event) => {
                             setPrintedTotal(
-                                event.target.value,
+                                formatRinggitDigitInput(
+                                    event.target.value,
+                                ),
                             );
 
                             setPrintedTotalTouched(true);
