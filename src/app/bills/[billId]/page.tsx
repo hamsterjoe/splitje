@@ -12,6 +12,7 @@ import { getServerOwnerBill } from "@/infrastructure/supabase/billing/get-server
 import { AddParticipantForm } from "@/components/add-participant-form";
 import { AddItemForm } from "@/components/add-item-form";
 import { UpdatePrintedTotalForm } from "@/components/update-printed-total-form";
+import { calculateOwnerBillReconciliation } from "@/application/billing/calculate-owner-bill-reconciliation";
 
 interface BillPageProps {
     params: Promise<{
@@ -35,6 +36,11 @@ export default async function BillPage({
     }
 
     const { bill } = result;
+
+    const reconciliation =
+        calculateOwnerBillReconciliation(bill);
+
+    const hasItems = bill.items.length > 0;
 
     return (
         <main
@@ -115,6 +121,117 @@ export default async function BillPage({
                                         }
                                     />
                                 </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </section>
+
+                <section
+                    aria-labelledby="reconciliation-heading"
+                >
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                <h2 id="reconciliation-heading">
+                                    Reconciliation
+                                </h2>
+                            </CardTitle>
+
+                            <CardDescription>
+                                Calculated total compared with the
+                                printed receipt total.
+                            </CardDescription>
+                        </CardHeader>
+
+                        <CardContent>
+                            <div className="flex flex-col gap-5">
+                                <div className="grid gap-4 sm:grid-cols-3">
+                                    <div className="rounded-lg border bg-muted/30 p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Item subtotal
+                                        </p>
+
+                                        <p className="mt-1 text-xl font-semibold tabular-nums">
+                                            {formatMoney(
+                                                reconciliation.itemSubtotalSen,
+                                                bill.currency,
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-lg border bg-muted/30 p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Calculated total
+                                        </p>
+
+                                        <p className="mt-1 text-xl font-semibold tabular-nums">
+                                            {formatMoney(
+                                                reconciliation
+                                                    .calculatedTotalSen,
+                                                bill.currency,
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-lg border bg-muted/30 p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Difference
+                                        </p>
+
+                                        <p className="mt-1 text-xl font-semibold tabular-nums">
+                                            {formatSignedMoney(
+                                                reconciliation.differenceSen,
+                                                bill.currency,
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div
+                                    className="rounded-lg border bg-muted/20 p-4"
+                                >
+                                    {!hasItems ? (
+                                        <div className="flex flex-col gap-1">
+                                            <p className="font-medium">
+                                                Add receipt items
+                                            </p>
+
+                                            <p className="text-sm leading-5 text-muted-foreground">
+                                                Reconciliation begins after
+                                                the first item is added.
+                                            </p>
+                                        </div>
+                                    ) : reconciliation.isReconciled ? (
+                                        <div className="flex flex-col gap-1">
+                                            <p className="font-medium">
+                                                Receipt reconciled
+                                            </p>
+
+                                            <p className="text-sm leading-5 text-muted-foreground">
+                                                The calculated and printed
+                                                totals match exactly.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-1">
+                                            <p className="font-medium">
+                                                Needs review
+                                            </p>
+
+                                            <p className="text-sm leading-5 text-muted-foreground">
+                                                {getReconciliationMessage(
+                                                    reconciliation.differenceSen,
+                                                    bill.currency,
+                                                )}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <p className="text-sm leading-5 text-muted-foreground">
+                                    Difference equals calculated total
+                                    minus printed total.
+                                </p>
                             </div>
                         </CardContent>
                     </Card>
@@ -254,6 +371,40 @@ function formatMoney(
         currency,
         currencyDisplay: "symbol",
     }).format(amountSen / 100);
+}
+
+function formatSignedMoney(
+    amountSen: number,
+    currency: string,
+): string {
+    if (amountSen === 0) {
+        return formatMoney(0, currency);
+    }
+
+    const sign =
+        amountSen > 0 ? "+" : "−";
+
+    return `${sign}${formatMoney(
+        Math.abs(amountSen),
+        currency,
+    )}`;
+}
+
+function getReconciliationMessage(
+    differenceSen: number,
+    currency: string,
+): string {
+    const absoluteDifference =
+        formatMoney(
+            Math.abs(differenceSen),
+            currency,
+        );
+
+    if (differenceSen > 0) {
+        return `The calculated total is ${absoluteDifference} higher than the printed total.`;
+    }
+
+    return `The calculated total is ${absoluteDifference} lower than the printed total.`;
 }
 
 function formatQuantity(
