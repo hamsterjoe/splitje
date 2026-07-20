@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { getServerOwnerBill } from "@/infrastructure/supabase/billing/get-server-owner-bill";
 import { AddParticipantForm } from "@/components/add-participant-form";
+import { AddItemForm } from "@/components/add-item-form";
 
 interface BillPageProps {
     params: Promise<{
@@ -168,46 +169,52 @@ export default async function BillPage({
                         </CardHeader>
 
                         <CardContent>
-                            {bill.items.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    No items have been added yet.
-                                </p>
-                            ) : (
-                                <ul className="flex flex-col divide-y">
-                                    {bill.items.map((item) => (
-                                        <li
-                                            key={item.id}
-                                            className="flex min-h-16 items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
-                                        >
-                                            <div className="min-w-0">
-                                                <p className="break-words font-medium">
-                                                    {item.description}
-                                                </p>
+                            <div className="flex flex-col gap-5">
+                                {bill.items.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        No items have been added yet.
+                                    </p>
+                                ) : (
+                                    <ul className="flex flex-col divide-y">
+                                        {bill.items.map((item) => (
+                                            <li
+                                                key={item.id}
+                                                className="flex min-h-16 items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                                            >
+                                                <div className="min-w-0">
+                                                    <p className="break-words font-medium">
+                                                        {item.description}
+                                                    </p>
 
-                                                <p className="mt-1 text-sm text-muted-foreground">
-                                                    {formatQuantity(
-                                                        item.quantity,
-                                                    )}
-                                                    {" × "}
-                                                    <span className="tabular-nums">
-                                                        {formatMoney(
-                                                            item.unitPriceSen,
-                                                            bill.currency,
+                                                    <p className="mt-1 text-sm text-muted-foreground">
+                                                        {formatQuantity(
+                                                            item.quantity,
                                                         )}
-                                                    </span>
-                                                </p>
-                                            </div>
+                                                        {" × "}
+                                                        <span className="tabular-nums">
+                                                            {formatMoney(
+                                                                item.unitPriceSen,
+                                                                bill.currency,
+                                                            )}
+                                                        </span>
+                                                    </p>
+                                                </div>
 
-                                            <p className="shrink-0 font-semibold tabular-nums">
-                                                {formatMoney(
-                                                    item.lineTotalSen,
-                                                    bill.currency,
-                                                )}
-                                            </p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
+                                                <p className="shrink-0 font-semibold tabular-nums">
+                                                    {formatMoney(
+                                                        item.lineTotalSen,
+                                                        bill.currency,
+                                                    )}
+                                                </p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+
+                                <div className="border-t pt-5">
+                                    <AddItemForm billId={bill.id} />
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </section>
