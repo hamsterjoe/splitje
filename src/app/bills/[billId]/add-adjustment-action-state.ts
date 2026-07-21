@@ -1,13 +1,21 @@
 export type AddAdjustmentField =
+    | "calculationMethod"
     | "type"
     | "label"
-    | "amount";
+    | "amount"
+    | "percentage";
 
 export interface AddAdjustmentActionState {
-    status: "idle" | "success" | "error";
+    status:
+    | "idle"
+    | "success"
+    | "error";
     message: string | null;
     fieldErrors: Partial<
-        Record<AddAdjustmentField, string>
+        Record<
+            AddAdjustmentField,
+            string
+        >
     >;
 }
 
