@@ -300,6 +300,7 @@ export default async function BillPage({
                                 <div className="border-t pt-5">
                                     <AddAdjustmentForm
                                         billId={bill.id}
+                                        hasItems={bill.items.length > 0}
                                     />
                                 </div>
                             </div>
