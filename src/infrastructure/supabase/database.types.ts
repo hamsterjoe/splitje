@@ -444,6 +444,20 @@ export type Database = {
           participant_id: string
         }[]
       }
+      add_bill_rate_adjustment: {
+        Args: {
+          p_bill_id: string
+          p_calculation_base_mode: string
+          p_label: string
+          p_rate_basis_points: number
+          p_rounding_mode: string
+          p_type: string
+        }
+        Returns: {
+          adjustment_id: string
+          calculated_amount_sen: number
+        }[]
+      }
       create_draft_bill: {
         Args: {
           p_merchant_name?: string
