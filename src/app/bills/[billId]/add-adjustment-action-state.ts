@@ -3,7 +3,8 @@ export type AddAdjustmentField =
     | "type"
     | "label"
     | "amount"
-    | "percentage";
+    | "percentage"
+    | "direction";
 
 export interface AddAdjustmentActionState {
     status:

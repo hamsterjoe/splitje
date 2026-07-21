@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { addServerBillAdjustment } from "@/infrastructure/supabase/billing/add-server-bill-adjustment";
 import { addServerBillRateAdjustment } from "@/infrastructure/supabase/billing/add-server-bill-rate-adjustment";
+import { addServerBillRoundingAdjustment } from "@/infrastructure/supabase/billing/add-server-bill-rounding-adjustment";
 
 import type {
     AddAdjustmentActionState,
@@ -13,6 +14,23 @@ import type {
 type CalculationMethod =
     | "fixed"
     | "rate";
+
+type AddAdjustmentServerResult =
+    | Awaited<
+        ReturnType<
+            typeof addServerBillAdjustment
+        >
+    >
+    | Awaited<
+        ReturnType<
+            typeof addServerBillRateAdjustment
+        >
+    >
+    | Awaited<
+        ReturnType<
+            typeof addServerBillRoundingAdjustment
+        >
+    >;
 
 function isCalculationMethod(
     value: unknown,
@@ -45,7 +63,9 @@ function mapFieldErrors(
             issue.path === "type" ||
             issue.path === "label" ||
             issue.path === "amount" ||
-            issue.path === "percentage"
+            issue.path ===
+            "percentage" ||
+            issue.path === "direction"
         ) {
             fieldErrors[issue.path] ??=
                 issue.message;
@@ -74,60 +94,98 @@ export async function addAdjustmentAction(
             "calculationMethod",
         ) ?? "fixed";
 
-    if (
-        !isCalculationMethod(
-            rawCalculationMethod,
-        )
-    ) {
-        return {
-            status: "error",
-            message:
-                "Check the highlighted field and try again.",
-            fieldErrors: {
-                calculationMethod:
-                    "Choose fixed amount or percentage.",
-            },
-        };
-    }
+    let result:
+        AddAdjustmentServerResult;
 
-    const result =
-        rawCalculationMethod === "fixed"
-            ? await addServerBillAdjustment(
+    if (type === "rounding") {
+        result =
+            await addServerBillRoundingAdjustment(
                 {
                     billId:
                         billId ??
                         undefined,
-                    type:
-                        type ??
+
+                    direction:
+                        formData.get(
+                            "direction",
+                        ) ??
                         undefined,
-                    label:
-                        label ??
-                        undefined,
+
                     amount:
                         formData.get(
                             "amount",
                         ) ??
                         undefined,
                 },
-            )
-            : await addServerBillRateAdjustment(
-                {
-                    billId:
-                        billId ??
-                        undefined,
-                    type:
-                        type ??
-                        undefined,
-                    label:
-                        label ??
-                        undefined,
-                    percentage:
-                        formData.get(
-                            "percentage",
-                        ) ??
-                        undefined,
-                },
             );
+    } else {
+        if (
+            !isCalculationMethod(
+                rawCalculationMethod,
+            )
+        ) {
+            return {
+                status: "error",
+                message:
+                    "Check the highlighted field and try again.",
+                fieldErrors: {
+                    calculationMethod:
+                        "Choose fixed amount or percentage.",
+                },
+            };
+        }
+
+        if (
+            rawCalculationMethod ===
+            "fixed"
+        ) {
+            result =
+                await addServerBillAdjustment(
+                    {
+                        billId:
+                            billId ??
+                            undefined,
+
+                        type:
+                            type ??
+                            undefined,
+
+                        label:
+                            label ??
+                            undefined,
+
+                        amount:
+                            formData.get(
+                                "amount",
+                            ) ??
+                            undefined,
+                    },
+                );
+        } else {
+            result =
+                await addServerBillRateAdjustment(
+                    {
+                        billId:
+                            billId ??
+                            undefined,
+
+                        type:
+                            type ??
+                            undefined,
+
+                        label:
+                            label ??
+                            undefined,
+
+                        percentage:
+                            formData.get(
+                                "percentage",
+                            ) ??
+                            undefined,
+                    },
+                );
+        }
+    }
 
     if (!result.success) {
         if (
@@ -172,13 +230,17 @@ export async function addAdjustmentAction(
         `/bills/${billId}`,
     );
 
-    return {
-        status: "success",
-        message:
-            rawCalculationMethod ===
+    const successMessage =
+        type === "rounding"
+            ? "Rounding adjustment added."
+            : rawCalculationMethod ===
                 "rate"
                 ? "Percentage adjustment added."
-                : "Adjustment added.",
+                : "Adjustment added.";
+
+    return {
+        status: "success",
+        message: successMessage,
         fieldErrors: {},
     };
 }
