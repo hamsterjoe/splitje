@@ -6,6 +6,14 @@ import {
     useState,
 } from "react";
 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+
 import { addAdjustmentAction } from "@/app/bills/[billId]/add-adjustment-action";
 import { initialAddAdjustmentActionState } from "@/app/bills/[billId]/add-adjustment-action-state";
 import { formatRinggitDigitInput } from "@/application/billing/validation/format-ringgit-digit-input";
@@ -23,6 +31,26 @@ type FixedAdjustmentType =
     | "tax"
     | "discount"
     | "other";
+
+function isFixedAdjustmentType(
+    value: unknown,
+): value is FixedAdjustmentType {
+    return (
+        value === "service_charge" ||
+        value === "tax" ||
+        value === "discount" ||
+        value === "other"
+    );
+}
+
+const adjustmentTypeLabels:
+    Record<FixedAdjustmentType, string> = {
+    service_charge:
+        "Service charge",
+    tax: "Tax / SST",
+    discount: "Discount",
+    other: "Other fee",
+};
 
 type AdjustmentField =
     | "type"
@@ -137,53 +165,65 @@ export function AddAdjustmentForm({
                         Type
                     </Label>
 
-                    <select
-                        id="adjustmentType"
+                    <input
+                        type="hidden"
                         name="type"
                         value={type}
-                        aria-invalid={Boolean(typeError)}
-                        aria-describedby={
-                            typeError
-                                ? "adjustmentType-error"
-                                : undefined
-                        }
-                        className="
-              h-11 w-full touch-manipulation
-              rounded-md border border-input
-              bg-card px-3 py-2 text-sm
-              text-foreground
-              focus-visible:outline-none
-              focus-visible:ring-2
-              focus-visible:ring-ring
-              aria-invalid:border-destructive
-              aria-invalid:ring-destructive/20
-            "
-                        onChange={(event) => {
-                            setType(
-                                event.target
-                                    .value as FixedAdjustmentType,
-                            );
+                    />
 
+                    <Select
+                        value={type}
+                        onValueChange={(nextType) => {
+                            if (
+                                !isFixedAdjustmentType(
+                                    nextType,
+                                )
+                            ) {
+                                return;
+                            }
+
+                            setType(nextType);
                             markTouched("type");
                             markEdited();
                         }}
                     >
-                        <option value="service_charge">
-                            Service charge
-                        </option>
+                        <SelectTrigger
+                            id="adjustmentType"
+                            aria-invalid={Boolean(typeError)}
+                            aria-describedby={
+                                typeError
+                                    ? "adjustmentType-error"
+                                    : undefined
+                            }
+                            className="h-11 w-full bg-card"
+                        >
+                            <SelectValue>
+                                {adjustmentTypeLabels[type]}
+                            </SelectValue>
+                        </SelectTrigger>
 
-                        <option value="tax">
-                            Tax / SST
-                        </option>
+                        <SelectContent>
+                            <SelectItem value="service_charge">
+                                {
+                                    adjustmentTypeLabels[
+                                    "service_charge"
+                                    ]
+                                }
+                            </SelectItem>
 
-                        <option value="discount">
-                            Discount
-                        </option>
+                            <SelectItem value="tax">
+                                {adjustmentTypeLabels.tax}
+                            </SelectItem>
 
-                        <option value="other">
-                            Other fee
-                        </option>
-                    </select>
+                            <SelectItem value="discount">
+                                {adjustmentTypeLabels.discount}
+                            </SelectItem>
+
+                            <SelectItem value="other">
+                                {adjustmentTypeLabels.other}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
 
                     {typeError ? (
                         <p
