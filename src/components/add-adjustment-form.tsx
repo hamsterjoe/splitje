@@ -27,11 +27,16 @@ interface AddAdjustmentFormProps {
     hasItems: boolean;
 }
 
-type FixedAdjustmentType =
+type AdjustmentType =
     | "service_charge"
     | "tax"
     | "discount"
+    | "rounding"
     | "other";
+
+type RoundingDirection =
+    | "add"
+    | "subtract";
 
 type CalculationMethod =
     | "fixed"
@@ -42,17 +47,19 @@ type AdjustmentField =
     | "type"
     | "label"
     | "amount"
-    | "percentage";
+    | "percentage"
+    | "direction";
 
 const adjustmentTypeLabels:
     Record<
-        FixedAdjustmentType,
+        AdjustmentType,
         string
     > = {
     service_charge:
         "Service charge",
     tax: "Tax / SST",
     discount: "Discount",
+    rounding: "Rounding",
     other: "Other fee",
 };
 
@@ -65,6 +72,15 @@ const calculationMethodLabels:
     rate: "Percentage",
 };
 
+const roundingDirectionLabels:
+    Record<
+        RoundingDirection,
+        string
+    > = {
+    add: "Add",
+    subtract: "Subtract",
+};
+
 interface AdjustmentDefaults {
     calculationMethod:
     CalculationMethod;
@@ -72,7 +88,7 @@ interface AdjustmentDefaults {
 }
 
 function getAdjustmentDefaults(
-    type: FixedAdjustmentType,
+    type: AdjustmentType,
     hasItems: boolean,
 ): AdjustmentDefaults {
     if (!hasItems) {
@@ -102,14 +118,24 @@ function getAdjustmentDefaults(
     };
 }
 
-function isFixedAdjustmentType(
+function isAdjustmentType(
     value: unknown,
-): value is FixedAdjustmentType {
+): value is AdjustmentType {
     return (
         value === "service_charge" ||
         value === "tax" ||
         value === "discount" ||
+        value === "rounding" ||
         value === "other"
+    );
+}
+
+function isRoundingDirection(
+    value: unknown,
+): value is RoundingDirection {
+    return (
+        value === "add" ||
+        value === "subtract"
     );
 }
 
@@ -133,7 +159,7 @@ export function AddAdjustmentForm({
         );
 
     const [type, setType] =
-        useState<FixedAdjustmentType>(
+        useState<AdjustmentType>(
             "service_charge",
         );
 
@@ -152,6 +178,13 @@ export function AddAdjustmentForm({
 
     const [amount, setAmount] =
         useState("0.00");
+
+    const [
+        roundingDirection,
+        setRoundingDirection,
+    ] = useState<RoundingDirection>(
+        "subtract",
+    );
 
     const [percentage, setPercentage] =
         useState(
@@ -202,6 +235,9 @@ export function AddAdjustmentForm({
             setEditedSinceSubmission(
                 false,
             );
+            setRoundingDirection(
+                "subtract",
+            );
         }
     }, [state, hasItems]);
 
@@ -235,7 +271,12 @@ export function AddAdjustmentForm({
         amountResult !== null &&
             !amountResult.success
             ? amountResult.message
-            : undefined;
+            : type === "rounding" &&
+                amountResult !== null &&
+                amountResult.success &&
+                amountResult.amountSen === 0
+                ? "Enter a rounding amount greater than zero."
+                : undefined;
 
     const percentageResult =
         touchedFields.percentage
@@ -264,6 +305,11 @@ export function AddAdjustmentForm({
             ? undefined
             : state.fieldErrors
                 .calculationMethod;
+
+    const directionError =
+        touchedFields.direction
+            ? undefined
+            : state.fieldErrors.direction;
 
     const labelError =
         touchedFields.label
@@ -307,6 +353,14 @@ export function AddAdjustmentForm({
                 value={calculationMethod}
             />
 
+            {type === "rounding" ? (
+                <input
+                    type="hidden"
+                    name="direction"
+                    value={roundingDirection}
+                />
+            ) : null}
+
             <div className="grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="adjustmentType">
@@ -319,7 +373,7 @@ export function AddAdjustmentForm({
                             nextType,
                         ) => {
                             if (
-                                !isFixedAdjustmentType(
+                                !isAdjustmentType(
                                     nextType,
                                 )
                             ) {
@@ -341,6 +395,14 @@ export function AddAdjustmentForm({
                             setPercentage(
                                 defaults.percentage,
                             );
+
+                            if (nextType === "rounding") {
+                                setRoundingDirection(
+                                    "subtract",
+                                );
+
+                                setAmount("0.00");
+                            }
 
                             markTouched("type");
 
@@ -391,6 +453,15 @@ export function AddAdjustmentForm({
                                 }
                             </SelectItem>
 
+                            <SelectItem
+                                value="rounding"
+                                disabled={!hasItems}
+                            >
+                                {
+                                    adjustmentTypeLabels.rounding
+                                }
+                            </SelectItem>
+
                             <SelectItem value="other">
                                 {
                                     adjustmentTypeLabels.other
@@ -410,182 +481,268 @@ export function AddAdjustmentForm({
                     ) : null}
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <Label htmlFor="adjustmentCalculationMethod">
-                        Calculation
-                    </Label>
+                {type === "rounding" ? (
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="roundingDirection">
+                            Direction
+                        </Label>
 
-                    <Select
-                        value={
-                            calculationMethod
-                        }
-                        onValueChange={(
-                            nextMethod,
-                        ) => {
-                            if (
-                                !isCalculationMethod(
-                                    nextMethod,
-                                )
-                            ) {
-                                return;
-                            }
+                        <Select
+                            value={roundingDirection}
+                            onValueChange={(
+                                nextDirection,
+                            ) => {
+                                if (
+                                    !isRoundingDirection(
+                                        nextDirection,
+                                    )
+                                ) {
+                                    return;
+                                }
 
-                            setCalculationMethod(
-                                nextMethod,
-                            );
-
-                            if (
-                                nextMethod === "rate" &&
-                                percentage.trim().length === 0
-                            ) {
-                                const defaults =
-                                    getAdjustmentDefaults(
-                                        type,
-                                        hasItems,
-                                    );
-
-                                setPercentage(
-                                    defaults.percentage,
+                                setRoundingDirection(
+                                    nextDirection,
                                 );
-                            }
 
-                            markTouched(
-                                "calculationMethod",
-                            );
+                                markTouched(
+                                    "direction",
+                                );
 
-                            markEdited();
-                        }}
-                    >
-                        <SelectTrigger
-                            id="adjustmentCalculationMethod"
-                            aria-invalid={Boolean(
-                                calculationMethodError,
-                            )}
-                            aria-describedby={
-                                calculationMethodError
-                                    ? "adjustmentCalculationMethod-error"
-                                    : !hasItems
-                                        ? "adjustmentCalculationMethod-help"
-                                        : undefined
-                            }
-                            className="h-11 w-full bg-card"
+                                markEdited();
+                            }}
                         >
-                            <SelectValue>
-                                {
-                                    calculationMethodLabels[
-                                    calculationMethod
-                                    ]
+                            <SelectTrigger
+                                id="roundingDirection"
+                                aria-invalid={Boolean(
+                                    directionError,
+                                )}
+                                aria-describedby={
+                                    directionError
+                                        ? "roundingDirection-error"
+                                        : "roundingDirection-help"
                                 }
-                            </SelectValue>
-                        </SelectTrigger>
-
-                        <SelectContent>
-                            <SelectItem value="fixed">
-                                Fixed amount
-                            </SelectItem>
-
-                            <SelectItem
-                                value="rate"
-                                disabled={
-                                    !hasItems
-                                }
+                                className="h-11 w-full bg-card"
                             >
-                                Percentage
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                                <SelectValue>
+                                    {
+                                        roundingDirectionLabels[
+                                        roundingDirection
+                                        ]
+                                    }
+                                </SelectValue>
+                            </SelectTrigger>
 
-                    {calculationMethodError ? (
-                        <p
-                            id="adjustmentCalculationMethod-error"
-                            role="alert"
-                            className="text-sm leading-5 text-destructive"
-                        >
-                            {
-                                calculationMethodError
+                            <SelectContent>
+                                <SelectItem value="subtract">
+                                    Subtract
+                                </SelectItem>
+
+                                <SelectItem value="add">
+                                    Add
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        {directionError ? (
+                            <p
+                                id="roundingDirection-error"
+                                role="alert"
+                                className="text-sm leading-5 text-destructive"
+                            >
+                                {directionError}
+                            </p>
+                        ) : (
+                            <p
+                                id="roundingDirection-help"
+                                className="text-sm leading-5 text-muted-foreground"
+                            >
+                                Match the sign printed
+                                on the receipt.
+                            </p>
+                        )}
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="adjustmentCalculationMethod">
+                            Calculation
+                        </Label>
+
+                        <Select
+                            value={
+                                calculationMethod
                             }
-                        </p>
-                    ) : !hasItems ? (
-                        <p
-                            id="adjustmentCalculationMethod-help"
-                            className="text-sm leading-5 text-muted-foreground"
+                            onValueChange={(
+                                nextMethod,
+                            ) => {
+                                if (
+                                    !isCalculationMethod(
+                                        nextMethod,
+                                    )
+                                ) {
+                                    return;
+                                }
+
+                                setCalculationMethod(
+                                    nextMethod,
+                                );
+
+                                if (
+                                    nextMethod === "rate" &&
+                                    percentage.trim().length === 0
+                                ) {
+                                    const defaults =
+                                        getAdjustmentDefaults(
+                                            type,
+                                            hasItems,
+                                        );
+
+                                    setPercentage(
+                                        defaults.percentage,
+                                    );
+                                }
+
+                                markTouched(
+                                    "calculationMethod",
+                                );
+
+                                markEdited();
+                            }}
                         >
-                            Add an item to
-                            enable percentage
-                            adjustments.
-                        </p>
-                    ) : null}
-                </div>
+                            <SelectTrigger
+                                id="adjustmentCalculationMethod"
+                                aria-invalid={Boolean(
+                                    calculationMethodError,
+                                )}
+                                aria-describedby={
+                                    calculationMethodError
+                                        ? "adjustmentCalculationMethod-error"
+                                        : !hasItems
+                                            ? "adjustmentCalculationMethod-help"
+                                            : undefined
+                                }
+                                className="h-11 w-full bg-card"
+                            >
+                                <SelectValue>
+                                    {
+                                        calculationMethodLabels[
+                                        calculationMethod
+                                        ]
+                                    }
+                                </SelectValue>
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                <SelectItem value="fixed">
+                                    Fixed amount
+                                </SelectItem>
+
+                                <SelectItem
+                                    value="rate"
+                                    disabled={
+                                        !hasItems
+                                    }
+                                >
+                                    Percentage
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        {calculationMethodError ? (
+                            <p
+                                id="adjustmentCalculationMethod-error"
+                                role="alert"
+                                className="text-sm leading-5 text-destructive"
+                            >
+                                {
+                                    calculationMethodError
+                                }
+                            </p>
+                        ) : !hasItems ? (
+                            <p
+                                id="adjustmentCalculationMethod-help"
+                                className="text-sm leading-5 text-muted-foreground"
+                            >
+                                Add an item to
+                                enable percentage
+                                adjustments.
+                            </p>
+                        ) : null}
+                    </div>
+                )}
             </div>
 
-            <div className="flex flex-col gap-2">
-                <Label htmlFor="adjustmentLabel">
-                    Label
-                </Label>
+            {type !== "rounding" ? (
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="adjustmentLabel">
+                        Label
+                    </Label>
 
-                <Input
-                    id="adjustmentLabel"
-                    name="label"
-                    type="text"
-                    autoComplete="off"
-                    enterKeyHint="next"
-                    placeholder="e.g. Service charge"
-                    required
-                    value={label}
-                    aria-invalid={Boolean(
-                        labelError,
-                    )}
-                    aria-describedby={
-                        labelError
-                            ? "adjustmentLabel-error"
-                            : "adjustmentLabel-help"
-                    }
-                    className="
+                    <Input
+                        id="adjustmentLabel"
+                        name="label"
+                        type="text"
+                        autoComplete="off"
+                        enterKeyHint="next"
+                        placeholder="e.g. Service charge"
+                        required
+                        value={label}
+                        aria-invalid={Boolean(
+                            labelError,
+                        )}
+                        aria-describedby={
+                            labelError
+                                ? "adjustmentLabel-error"
+                                : "adjustmentLabel-help"
+                        }
+                        className="
                         h-11 bg-card
                         aria-invalid:border-destructive
                         aria-invalid:ring-destructive/20
                     "
-                    onChange={(event) => {
-                        setLabel(
-                            event.target.value,
-                        );
-                        markTouched("label");
-                        markEdited();
-                    }}
-                    onBlur={() => {
-                        markTouched("label");
-                    }}
-                    onInvalid={(event) => {
-                        event.preventDefault();
-                        markTouched("label");
-                    }}
-                />
+                        onChange={(event) => {
+                            setLabel(
+                                event.target.value,
+                            );
+                            markTouched("label");
+                            markEdited();
+                        }}
+                        onBlur={() => {
+                            markTouched("label");
+                        }}
+                        onInvalid={(event) => {
+                            event.preventDefault();
+                            markTouched("label");
+                        }}
+                    />
 
-                {labelError ? (
-                    <p
-                        id="adjustmentLabel-error"
-                        role="alert"
-                        className="text-sm leading-5 text-destructive"
-                    >
-                        {labelError}
-                    </p>
-                ) : (
-                    <p
-                        id="adjustmentLabel-help"
-                        className="text-sm leading-5 text-muted-foreground"
-                    >
-                        Use the wording
-                        printed on the
-                        receipt.
-                    </p>
-                )}
-            </div>
+                    {labelError ? (
+                        <p
+                            id="adjustmentLabel-error"
+                            role="alert"
+                            className="text-sm leading-5 text-destructive"
+                        >
+                            {labelError}
+                        </p>
+                    ) : (
+                        <p
+                            id="adjustmentLabel-help"
+                            className="text-sm leading-5 text-muted-foreground"
+                        >
+                            Use the wording
+                            printed on the
+                            receipt.
+                        </p>
+                    )}
+                </div>
+            ) : null}
 
-            {calculationMethod ===
-                "fixed" ? (
+            {type === "rounding" ||
+                calculationMethod === "fixed" ? (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="adjustmentAmount">
-                        Amount (RM)
+                        {type === "rounding"
+                            ? "Rounding amount (RM)"
+                            : "Amount (RM)"}
                     </Label>
 
                     <Input
@@ -657,9 +814,9 @@ export function AddAdjustmentForm({
                             id="adjustmentAmount-help"
                             className="text-sm leading-5 text-muted-foreground"
                         >
-                            Discounts are
-                            subtracted
-                            automatically.
+                            {type === "rounding"
+                                ? "Enter the absolute rounding amount shown on the receipt."
+                                : "Discounts are subtracted automatically."}
                         </p>
                     )}
                 </div>
