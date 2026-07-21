@@ -65,6 +65,43 @@ const calculationMethodLabels:
     rate: "Percentage",
 };
 
+interface AdjustmentDefaults {
+    calculationMethod:
+    CalculationMethod;
+    percentage: string;
+}
+
+function getAdjustmentDefaults(
+    type: FixedAdjustmentType,
+    hasItems: boolean,
+): AdjustmentDefaults {
+    if (!hasItems) {
+        return {
+            calculationMethod: "fixed",
+            percentage: "",
+        };
+    }
+
+    if (type === "service_charge") {
+        return {
+            calculationMethod: "rate",
+            percentage: "10",
+        };
+    }
+
+    if (type === "tax") {
+        return {
+            calculationMethod: "rate",
+            percentage: "6",
+        };
+    }
+
+    return {
+        calculationMethod: "fixed",
+        percentage: "",
+    };
+}
+
 function isFixedAdjustmentType(
     value: unknown,
 ): value is FixedAdjustmentType {
@@ -104,7 +141,10 @@ export function AddAdjustmentForm({
         calculationMethod,
         setCalculationMethod,
     ] = useState<CalculationMethod>(
-        "fixed",
+        () => getAdjustmentDefaults(
+            "service_charge",
+            hasItems,
+        ).calculationMethod,
     );
 
     const [label, setLabel] =
@@ -114,7 +154,12 @@ export function AddAdjustmentForm({
         useState("0.00");
 
     const [percentage, setPercentage] =
-        useState("");
+        useState(
+            () => getAdjustmentDefaults(
+                "service_charge",
+                hasItems,
+            ).percentage,
+        );
 
     const [
         touchedFields,
@@ -135,17 +180,30 @@ export function AddAdjustmentForm({
 
     useEffect(() => {
         if (state.status === "success") {
+            const defaults =
+                getAdjustmentDefaults(
+                    "service_charge",
+                    hasItems,
+                );
+
             setType("service_charge");
-            setCalculationMethod("fixed");
+
+            setCalculationMethod(
+                defaults.calculationMethod,
+            );
+
             setLabel("");
             setAmount("0.00");
-            setPercentage("");
+
+            setPercentage(
+                defaults.percentage,
+            );
             setTouchedFields({});
             setEditedSinceSubmission(
                 false,
             );
         }
-    }, [state]);
+    }, [state, hasItems]);
 
     function markTouched(
         field: AdjustmentField,
@@ -268,10 +326,28 @@ export function AddAdjustmentForm({
                                 return;
                             }
 
+                            const defaults =
+                                getAdjustmentDefaults(
+                                    nextType,
+                                    hasItems,
+                                );
+
                             setType(nextType);
-                            markTouched(
-                                "type",
+
+                            setCalculationMethod(
+                                defaults.calculationMethod,
                             );
+
+                            setPercentage(
+                                defaults.percentage,
+                            );
+
+                            markTouched("type");
+
+                            markTouched(
+                                "calculationMethod",
+                            );
+
                             markEdited();
                         }}
                     >
@@ -357,6 +433,21 @@ export function AddAdjustmentForm({
                             setCalculationMethod(
                                 nextMethod,
                             );
+
+                            if (
+                                nextMethod === "rate" &&
+                                percentage.trim().length === 0
+                            ) {
+                                const defaults =
+                                    getAdjustmentDefaults(
+                                        type,
+                                        hasItems,
+                                    );
+
+                                setPercentage(
+                                    defaults.percentage,
+                                );
+                            }
 
                             markTouched(
                                 "calculationMethod",
