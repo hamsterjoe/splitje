@@ -458,6 +458,12 @@ export type Database = {
           calculated_amount_sen: number
         }[]
       }
+      add_bill_rounding_adjustment: {
+        Args: { p_amount_sen: number; p_bill_id: string }
+        Returns: {
+          adjustment_id: string
+        }[]
+      }
       create_draft_bill: {
         Args: {
           p_merchant_name?: string
