@@ -197,4 +197,37 @@ describe("calculateRateAdjustment", () => {
       ),
     );
   });
+
+  it("calculates the example receipt adjustments", () => {
+    const itemSubtotalSen = 17_200;
+
+    const serviceCharge =
+      calculateRateAdjustment({
+        baseAmountSen:
+          itemSubtotalSen,
+        rateBasisPoints: 1_000,
+      });
+
+    const sst =
+      calculateRateAdjustment({
+        baseAmountSen:
+          itemSubtotalSen,
+        rateBasisPoints: 600,
+      });
+
+    expect(
+      serviceCharge.computedAmountSen,
+    ).toBe(1_720);
+
+    expect(
+      sst.computedAmountSen,
+    ).toBe(1_032);
+
+    expect(
+      itemSubtotalSen +
+      serviceCharge.effectiveAmountSen +
+      sst.effectiveAmountSen -
+      2,
+    ).toBe(19_950);
+  });
 });
