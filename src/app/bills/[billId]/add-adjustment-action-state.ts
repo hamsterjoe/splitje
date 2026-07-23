@@ -4,8 +4,10 @@ export type AddAdjustmentField =
     | "label"
     | "amount"
     | "percentage"
-    | "direction";
-
+    | "direction"
+    | "scope"
+    | "applicableItemIds";
+    
 export interface AddAdjustmentActionState {
     status:
     | "idle"

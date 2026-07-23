@@ -22,9 +22,17 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
+interface AdjustmentScopeItem {
+    id: string;
+    description: string;
+    lineTotalSen: number;
+}
+
 interface AddAdjustmentFormProps {
     billId: string;
     hasItems: boolean;
+    currency: string;
+    items: AdjustmentScopeItem[];
 }
 
 type AdjustmentType =
@@ -48,7 +56,23 @@ type AdjustmentField =
     | "label"
     | "amount"
     | "percentage"
-    | "direction";
+    | "direction"
+    | "scope"
+    | "applicableItemIds";
+
+type AdjustmentScope =
+    | "all_items"
+    | "selected_items";
+
+const adjustmentScopeLabels:
+    Record<
+        AdjustmentScope,
+        string
+    > = {
+    all_items: "All items",
+    selected_items:
+        "Selected items",
+};
 
 const adjustmentTypeLabels:
     Record<
@@ -85,6 +109,15 @@ interface AdjustmentDefaults {
     calculationMethod:
     CalculationMethod;
     percentage: string;
+}
+
+function isAdjustmentScope(
+    value: unknown,
+): value is AdjustmentScope {
+    return (
+        value === "all_items" ||
+        value === "selected_items"
+    );
 }
 
 function getAdjustmentDefaults(
@@ -148,9 +181,24 @@ function isCalculationMethod(
     );
 }
 
+function formatMoney(
+    amountSen: number,
+    currency: string,
+): string {
+    return new Intl.NumberFormat(
+        "en-MY",
+        {
+            style: "currency",
+            currency,
+        },
+    ).format(amountSen / 100);
+}
+
 export function AddAdjustmentForm({
     billId,
     hasItems,
+    currency,
+    items,
 }: AddAdjustmentFormProps) {
     const [state, formAction] =
         useActionState(
@@ -193,6 +241,16 @@ export function AddAdjustmentForm({
                 hasItems,
             ).percentage,
         );
+
+    const [scope, setScope] =
+        useState<AdjustmentScope>(
+            "all_items",
+        );
+
+    const [
+        selectedItemIds,
+        setSelectedItemIds,
+    ] = useState<string[]>([]);
 
     const [
         touchedFields,
@@ -238,6 +296,9 @@ export function AddAdjustmentForm({
             setRoundingDirection(
                 "subtract",
             );
+
+            setScope("all_items");
+            setSelectedItemIds([]);
         }
     }, [state, hasItems]);
 
@@ -326,6 +387,24 @@ export function AddAdjustmentForm({
             ? percentageLocalError
             : state.fieldErrors.percentage;
 
+    const scopeError =
+        touchedFields.scope
+            ? undefined
+            : state.fieldErrors.scope;
+
+    const applicableItemIdsLocalError =
+        touchedFields.applicableItemIds &&
+            scope === "selected_items" &&
+            selectedItemIds.length === 0
+            ? "Select at least one applicable item."
+            : undefined;
+
+    const applicableItemIdsError =
+        touchedFields.applicableItemIds
+            ? applicableItemIdsLocalError
+            : state.fieldErrors
+                .applicableItemIds;
+
     const showStatusMessage =
         state.message !== null &&
         !editedSinceSubmission;
@@ -391,6 +470,9 @@ export function AddAdjustmentForm({
                             setCalculationMethod(
                                 defaults.calculationMethod,
                             );
+
+                            setScope("all_items");
+                            setSelectedItemIds([]);
 
                             setPercentage(
                                 defaults.percentage,
@@ -585,6 +667,11 @@ export function AddAdjustmentForm({
                                 setCalculationMethod(
                                     nextMethod,
                                 );
+
+                                if (nextMethod === "fixed") {
+                                    setScope("all_items");
+                                    setSelectedItemIds([]);
+                                }
 
                                 if (
                                     nextMethod === "rate" &&
@@ -896,13 +983,208 @@ export function AddAdjustmentForm({
                             className="text-sm leading-5 text-muted-foreground"
                         >
                             Calculated from
-                            the full item
+                            the eligible item
                             subtotal using
                             half-up rounding.
                         </p>
                     )}
                 </div>
             )}
+
+
+            {type !== "rounding" &&
+                calculationMethod === "rate" ? (
+                <fieldset
+                    className="flex flex-col gap-3"
+                    aria-invalid={Boolean(
+                        scopeError ||
+                        applicableItemIdsError,
+                    )}
+                    aria-describedby={
+                        scopeError
+                            ? "adjustmentScope-error"
+                            : applicableItemIdsError
+                                ? "applicableItemIds-error"
+                                : "adjustmentScope-help"
+                    }
+                >
+                    <legend className="text-sm font-medium">
+                        Applies to
+                    </legend>
+
+                    <input
+                        type="hidden"
+                        name="scope"
+                        value={scope}
+                    />
+
+                    <Select
+                        value={scope}
+                        onValueChange={(nextScope) => {
+                            if (
+                                !isAdjustmentScope(
+                                    nextScope,
+                                )
+                            ) {
+                                return;
+                            }
+
+                            setScope(nextScope);
+                            markTouched("scope");
+                            markEdited();
+                        }}
+                    >
+                        <SelectTrigger
+                            id="adjustmentScope"
+                            aria-invalid={Boolean(
+                                scopeError,
+                            )}
+                            className="h-11 w-full bg-card"
+                        >
+                            <SelectValue>
+                                {
+                                    adjustmentScopeLabels[
+                                    scope
+                                    ]
+                                }
+                            </SelectValue>
+                        </SelectTrigger>
+
+                        <SelectContent>
+                            <SelectItem value="all_items">
+                                All items
+                            </SelectItem>
+
+                            <SelectItem value="selected_items">
+                                Selected items
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    {scopeError ? (
+                        <p
+                            id="adjustmentScope-error"
+                            role="alert"
+                            className="text-sm leading-5 text-destructive"
+                        >
+                            {scopeError}
+                        </p>
+                    ) : null}
+
+                    {scope === "selected_items" ? (
+                        <div className="overflow-hidden rounded-lg border">
+                            <div className="border-b bg-muted/30 px-3 py-2">
+                                <p className="text-sm font-medium">
+                                    Select applicable
+                                    receipt items
+                                </p>
+                            </div>
+
+                            <div className="divide-y">
+                                {items.map((item) => {
+                                    const checked =
+                                        selectedItemIds.includes(
+                                            item.id,
+                                        );
+
+                                    return (
+                                        <label
+                                            key={item.id}
+                                            className="
+                                    flex min-h-12
+                                    cursor-pointer
+                                    items-center gap-3
+                                    px-3 py-2
+                                    hover:bg-muted/30
+                                "
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                name="applicableItemIds"
+                                                value={
+                                                    item.id
+                                                }
+                                                checked={
+                                                    checked
+                                                }
+                                                className="
+                                        size-4
+                                        shrink-0
+                                        accent-primary
+                                    "
+                                                onChange={(
+                                                    event,
+                                                ) => {
+                                                    setSelectedItemIds(
+                                                        (
+                                                            current,
+                                                        ) =>
+                                                            event
+                                                                .target
+                                                                .checked
+                                                                ? [
+                                                                    ...current,
+                                                                    item.id,
+                                                                ]
+                                                                : current.filter(
+                                                                    (
+                                                                        itemId,
+                                                                    ) =>
+                                                                        itemId !==
+                                                                        item.id,
+                                                                ),
+                                                    );
+
+                                                    markTouched(
+                                                        "applicableItemIds",
+                                                    );
+
+                                                    markEdited();
+                                                }}
+                                            />
+
+                                            <span className="min-w-0 flex-1 break-words text-sm">
+                                                {
+                                                    item.description
+                                                }
+                                            </span>
+
+                                            <span className="shrink-0 text-sm font-medium tabular-nums">
+                                                {formatMoney(
+                                                    item.lineTotalSen,
+                                                    currency,
+                                                )}
+                                            </span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {applicableItemIdsError ? (
+                        <p
+                            id="applicableItemIds-error"
+                            role="alert"
+                            className="text-sm leading-5 text-destructive"
+                        >
+                            {
+                                applicableItemIdsError
+                            }
+                        </p>
+                    ) : (
+                        <p
+                            id="adjustmentScope-help"
+                            className="text-sm leading-5 text-muted-foreground"
+                        >
+                            {scope ===
+                                "all_items"
+                                ? "The percentage is calculated from the complete item subtotal."
+                                : "The percentage is calculated only from the selected item totals."}
+                        </p>
+                    )}
+                </fieldset>
+            ) : null}
 
             <div
                 aria-live="polite"
@@ -927,7 +1209,6 @@ export function AddAdjustmentForm({
                     </p>
                 ) : null}
             </div>
-
             <AddAdjustmentSubmitButton />
         </form>
     );

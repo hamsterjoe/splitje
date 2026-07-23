@@ -57,6 +57,30 @@ function mapFieldErrors(
     > = {};
 
     for (const issue of issues) {
+
+        if (
+            issue.path ===
+            "itemScope.scope"
+        ) {
+            fieldErrors.scope ??=
+                issue.message;
+
+            continue;
+        }
+
+        if (
+            issue.path ===
+            "itemScope.applicableItemIds" ||
+            issue.path.startsWith(
+                "itemScope.applicableItemIds.",
+            )
+        ) {
+            fieldErrors.applicableItemIds ??=
+                issue.message;
+
+            continue;
+        }
+
         if (
             issue.path ===
             "calculationMethod" ||
@@ -163,27 +187,33 @@ export async function addAdjustmentAction(
                 );
         } else {
             result =
-                await addServerBillRateAdjustment(
-                    {
-                        billId:
-                            billId ??
-                            undefined,
+                await addServerBillRateAdjustment({
+                    billId:
+                        billId ?? undefined,
 
-                        type:
-                            type ??
-                            undefined,
+                    type:
+                        type ?? undefined,
 
-                        label:
-                            label ??
-                            undefined,
+                    label:
+                        label ?? undefined,
 
-                        percentage:
+                    percentage:
+                        formData.get(
+                            "percentage",
+                        ) ?? undefined,
+
+                    itemScope: {
+                        scope:
                             formData.get(
-                                "percentage",
-                            ) ??
-                            undefined,
+                                "scope",
+                            ) ?? "all_items",
+
+                        applicableItemIds:
+                            formData.getAll(
+                                "applicableItemIds",
+                            ),
                     },
-                );
+                });
         }
     }
 

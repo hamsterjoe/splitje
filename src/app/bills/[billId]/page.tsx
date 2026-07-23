@@ -300,7 +300,19 @@ export default async function BillPage({
                                 <div className="border-t pt-5">
                                     <AddAdjustmentForm
                                         billId={bill.id}
-                                        hasItems={bill.items.length > 0}
+                                        hasItems={
+                                            bill.items.length > 0
+                                        }
+                                        currency={bill.currency}
+                                        items={bill.items.map(
+                                            (item) => ({
+                                                id: item.id,
+                                                description:
+                                                    item.description,
+                                                lineTotalSen:
+                                                    item.lineTotalSen,
+                                            }),
+                                        )}
                                     />
                                 </div>
                             </div>
