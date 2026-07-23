@@ -1,178 +1,186 @@
 import {
-  describe,
-  expect,
-  it,
-  vi,
+    describe,
+    expect,
+    it,
+    vi,
 } from "vitest";
 
 import {
-  getOwnerBill,
-  type GetOwnerBillDependencies,
-  type OwnerBill,
+    getOwnerBill,
+    type GetOwnerBillDependencies,
+    type OwnerBill,
 } from "./get-owner-bill";
 
 const billId =
-  "9a714df0-1303-4fe8-9f9c-f0b7d5136627";
+    "9a714df0-1303-4fe8-9f9c-f0b7d5136627";
 
 const ownerParticipantId =
-  "8b2c046a-26cd-46c1-a476-e4e775839365";
+    "8b2c046a-26cd-46c1-a476-e4e775839365";
 
 const itemId =
-  "61aab4ba-1d80-41df-a157-a2daf831df6a";
+    "61aab4ba-1d80-41df-a157-a2daf831df6a";
 
 const adjustmentId =
-  "a715ef81-d7da-4997-b0e7-98dd5d16bded";
+    "a715ef81-d7da-4997-b0e7-98dd5d16bded";
 
 const ownerBill: OwnerBill = {
-  id: billId,
-  merchantName: "Restaurant A",
-  receiptDate: "2026-07-19",
-  currency: "MYR",
-  printedTotalSen: 12_450,
-  status: "draft",
-  rowVersion: 0,
-  createdAt: "2026-07-19T08:00:00.000Z",
-  updatedAt: "2026-07-19T08:00:00.000Z",
-  finalisedAt: null,
-  archivedAt: null,
-  participants: [
-    {
-      id: ownerParticipantId,
-      displayName: "Jeff",
-      linkedUserId:
-        "7adf5a86-16db-4b58-b71d-40c890ea0924",
-      isOwner: true,
-      sortOrder: 0,
-      colorToken: null,
-      createdAt: "2026-07-19T08:00:00.000Z",
-      updatedAt: "2026-07-19T08:00:00.000Z",
-    },
-  ],
-  items: [
-    {
-      id: itemId,
-      description: "Nasi Lemak",
-      quantity: 2,
-      unitPriceSen: 1_250,
-      manualLineTotalSen: null,
-      lineTotalSen: 2_500,
-      sortOrder: 0,
-      createdAt:
-        "2026-07-19T08:05:00.000Z",
-      updatedAt:
-        "2026-07-19T08:05:00.000Z",
-    },
-  ],
-  adjustments: [
-    {
-      id: adjustmentId,
-      type: "tax",
-      label: "SST",
-      amountSen: 150,
-      sortOrder: 0,
-      createdAt:
-        "2026-07-19T08:10:00.000Z",
-      updatedAt:
-        "2026-07-19T08:10:00.000Z",
-    },
-  ],
+    id: billId,
+    merchantName: "Restaurant A",
+    receiptDate: "2026-07-19",
+    currency: "MYR",
+    printedTotalSen: 12_450,
+    status: "draft",
+    rowVersion: 0,
+    createdAt: "2026-07-19T08:00:00.000Z",
+    updatedAt: "2026-07-19T08:00:00.000Z",
+    finalisedAt: null,
+    archivedAt: null,
+    participants: [
+        {
+            id: ownerParticipantId,
+            displayName: "Jeff",
+            linkedUserId:
+                "7adf5a86-16db-4b58-b71d-40c890ea0924",
+            isOwner: true,
+            sortOrder: 0,
+            colorToken: null,
+            createdAt: "2026-07-19T08:00:00.000Z",
+            updatedAt: "2026-07-19T08:00:00.000Z",
+        },
+    ],
+    items: [
+        {
+            id: itemId,
+            description: "Nasi Lemak",
+            quantity: 2,
+            unitPriceSen: 1_250,
+            manualLineTotalSen: null,
+            lineTotalSen: 2_500,
+            sortOrder: 0,
+            createdAt:
+                "2026-07-19T08:05:00.000Z",
+            updatedAt:
+                "2026-07-19T08:05:00.000Z",
+        },
+    ],
+    adjustments: [
+        {
+            id: adjustmentId,
+            type: "tax",
+            label: "SST",
+            amountSen: 150,
+            calculationMethod: "rate",
+            rateBasisPoints: 600,
+            roundingMode: "half_up",
+            calculationBaseMode:
+                "item_subtotal",
+            amountSource: "calculated",
+            appliesToAllItems: false,
+            applicableItemIds: [itemId],
+            sortOrder: 0,
+            createdAt:
+                "2026-07-19T08:10:00.000Z",
+            updatedAt:
+                "2026-07-19T08:10:00.000Z",
+        },
+    ],
 };
 
 function createDependencies(): GetOwnerBillDependencies {
-  return {
-    getOwnerBillRecord: vi
-      .fn()
-      .mockResolvedValue({
-        success: true,
-        bill: ownerBill,
-      }),
-  };
+    return {
+        getOwnerBillRecord: vi
+            .fn()
+            .mockResolvedValue({
+                success: true,
+                bill: ownerBill,
+            }),
+    };
 }
 
 describe("getOwnerBill", () => {
-  it("returns an owner-accessible bill", async () => {
-    const dependencies = createDependencies();
+    it("returns an owner-accessible bill", async () => {
+        const dependencies = createDependencies();
 
-    const result = await getOwnerBill(
-      billId,
-      dependencies,
-    );
+        const result = await getOwnerBill(
+            billId,
+            dependencies,
+        );
 
-    expect(result).toEqual({
-      success: true,
-      bill: ownerBill,
+        expect(result).toEqual({
+            success: true,
+            bill: ownerBill,
+        });
+
+        expect(
+            dependencies.getOwnerBillRecord,
+        ).toHaveBeenCalledWith(billId);
     });
 
-    expect(
-      dependencies.getOwnerBillRecord,
-    ).toHaveBeenCalledWith(billId);
-  });
+    it("returns not found for an invalid bill ID", async () => {
+        const dependencies = createDependencies();
 
-  it("returns not found for an invalid bill ID", async () => {
-    const dependencies = createDependencies();
+        const result = await getOwnerBill(
+            "not-a-uuid",
+            dependencies,
+        );
 
-    const result = await getOwnerBill(
-      "not-a-uuid",
-      dependencies,
-    );
+        expect(result).toEqual({
+            success: false,
+            error: {
+                type: "not_found",
+            },
+        });
 
-    expect(result).toEqual({
-      success: false,
-      error: {
-        type: "not_found",
-      },
+        expect(
+            dependencies.getOwnerBillRecord,
+        ).not.toHaveBeenCalled();
     });
 
-    expect(
-      dependencies.getOwnerBillRecord,
-    ).not.toHaveBeenCalled();
-  });
+    it("returns not found when RLS exposes no bill", async () => {
+        const dependencies = createDependencies();
 
-  it("returns not found when RLS exposes no bill", async () => {
-    const dependencies = createDependencies();
+        vi.mocked(
+            dependencies.getOwnerBillRecord,
+        ).mockResolvedValue({
+            success: true,
+            bill: null,
+        });
 
-    vi.mocked(
-      dependencies.getOwnerBillRecord,
-    ).mockResolvedValue({
-      success: true,
-      bill: null,
+        const result = await getOwnerBill(
+            billId,
+            dependencies,
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: {
+                type: "not_found",
+            },
+        });
     });
 
-    const result = await getOwnerBill(
-      billId,
-      dependencies,
-    );
+    it("returns a safe database error", async () => {
+        const dependencies = createDependencies();
 
-    expect(result).toEqual({
-      success: false,
-      error: {
-        type: "not_found",
-      },
+        vi.mocked(
+            dependencies.getOwnerBillRecord,
+        ).mockResolvedValue({
+            success: false,
+        });
+
+        const result = await getOwnerBill(
+            billId,
+            dependencies,
+        );
+
+        expect(result).toEqual({
+            success: false,
+            error: {
+                type: "database_error",
+                code: "GET_OWNER_BILL_FAILED",
+                message:
+                    "Unable to load the bill. Please try again.",
+            },
+        });
     });
-  });
-
-  it("returns a safe database error", async () => {
-    const dependencies = createDependencies();
-
-    vi.mocked(
-      dependencies.getOwnerBillRecord,
-    ).mockResolvedValue({
-      success: false,
-    });
-
-    const result = await getOwnerBill(
-      billId,
-      dependencies,
-    );
-
-    expect(result).toEqual({
-      success: false,
-      error: {
-        type: "database_error",
-        code: "GET_OWNER_BILL_FAILED",
-        message:
-          "Unable to load the bill. Please try again.",
-      },
-    });
-  });
 });
