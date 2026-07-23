@@ -11,6 +11,7 @@ import {
 import { getServerOwnerBill } from "@/infrastructure/supabase/billing/get-server-owner-bill";
 import { AddParticipantForm } from "@/components/add-participant-form";
 import { AddAdjustmentForm } from "@/components/add-adjustment-form";
+import { formatAdjustmentDescription } from "./format-adjustment-description";
 import { AddItemForm } from "@/components/add-item-form";
 import { UpdatePrintedTotalForm } from "@/components/update-printed-total-form";
 import { calculateOwnerBillReconciliation } from "@/application/billing/calculate-owner-bill-reconciliation";
@@ -278,9 +279,9 @@ export default async function BillPage({
                                                             {adjustment.label}
                                                         </p>
 
-                                                        <p className="mt-1 text-sm text-muted-foreground">
-                                                            {getAdjustmentTypeLabel(
-                                                                adjustment.type,
+                                                        <p className="mt-1 break-words text-sm text-muted-foreground">
+                                                            {formatAdjustmentDescription(
+                                                                adjustment,
                                                             )}
                                                         </p>
                                                     </div>
@@ -479,25 +480,6 @@ function formatSignedMoney(
         Math.abs(amountSen),
         currency,
     )}`;
-}
-
-function getAdjustmentTypeLabel(
-    type:
-        | "discount"
-        | "service_charge"
-        | "tax"
-        | "rounding"
-        | "other",
-): string {
-    const labels = {
-        discount: "Discount",
-        service_charge: "Service charge",
-        tax: "Tax / SST",
-        rounding: "Rounding",
-        other: "Other fee",
-    };
-
-    return labels[type];
 }
 
 function getReconciliationMessage(
