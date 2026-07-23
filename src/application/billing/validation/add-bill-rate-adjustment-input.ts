@@ -1,7 +1,8 @@
 import { z } from "zod";
 
-import { parsePercentageInput } from "./parse-percentage-input";
 import { adjustmentItemScopeInputSchema } from "./adjustment-item-scope-input";
+import { getDefaultBillAdjustmentLabel } from "./get-default-bill-adjustment-label";
+import { parsePercentageInput } from "./parse-percentage-input";
 
 const rateAdjustmentTypeSchema =
     z.enum([
@@ -48,17 +49,10 @@ export const addBillRateAdjustmentInputSchema =
             }),
 
             type: rateAdjustmentTypeSchema,
-
             label: z
-                .string({
-                    message:
-                        "Adjustment label is required.",
-                })
+                .string()
                 .trim()
-                .min(1, {
-                    message:
-                        "Enter an adjustment label.",
-                }),
+                .default(""),
 
             percentage:
                 adjustmentPercentageSchema,
@@ -81,16 +75,25 @@ export const addBillRateAdjustmentInputSchema =
                         ? -percentage
                         : percentage;
 
+                const resolvedLabel =
+                    label.length > 0
+                        ? label
+                        : getDefaultBillAdjustmentLabel(
+                              type,
+                          );
+
                 const normalizedScope =
                     itemScope ?? {
-                        appliesToAllItems: true,
-                        applicableItemIds: null,
+                        appliesToAllItems:
+                            true as const,
+                        applicableItemIds:
+                            null,
                     };
 
                 return {
                     billId,
                     type,
-                    label,
+                    label: resolvedLabel,
                     calculationMethod:
                         "rate" as const,
                     rateBasisPoints:
@@ -102,7 +105,6 @@ export const addBillRateAdjustmentInputSchema =
                     appliesToAllItems:
                         normalizedScope
                             .appliesToAllItems,
-
                     applicableItemIds:
                         normalizedScope
                             .applicableItemIds,

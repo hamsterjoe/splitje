@@ -21,6 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { getDefaultBillAdjustmentLabel } from "@/application/billing/validation/get-default-bill-adjustment-label";
 
 interface AdjustmentScopeItem {
     id: string;
@@ -317,12 +318,6 @@ export function AddAdjustmentForm({
         setEditedSinceSubmission(true);
     }
 
-    const labelLocalError =
-        touchedFields.label &&
-            label.trim().length === 0
-            ? "Enter an adjustment label."
-            : undefined;
-
     const amountResult =
         touchedFields.amount
             ? parseRinggitInput(amount)
@@ -371,11 +366,6 @@ export function AddAdjustmentForm({
         touchedFields.direction
             ? undefined
             : state.fieldErrors.direction;
-
-    const labelError =
-        touchedFields.label
-            ? labelLocalError
-            : state.fieldErrors.label;
 
     const amountError =
         touchedFields.amount
@@ -770,17 +760,12 @@ export function AddAdjustmentForm({
                         type="text"
                         autoComplete="off"
                         enterKeyHint="next"
-                        placeholder="e.g. Service charge"
-                        required
-                        value={label}
-                        aria-invalid={Boolean(
-                            labelError,
-                        )}
-                        aria-describedby={
-                            labelError
-                                ? "adjustmentLabel-error"
-                                : "adjustmentLabel-help"
-                        }
+                        placeholder={
+                            getDefaultBillAdjustmentLabel(
+                                type,
+                            )
+                        } value={label}
+                        aria-describedby="adjustmentLabel-help"
                         className="
                         h-11 bg-card
                         aria-invalid:border-destructive
@@ -796,30 +781,7 @@ export function AddAdjustmentForm({
                         onBlur={() => {
                             markTouched("label");
                         }}
-                        onInvalid={(event) => {
-                            event.preventDefault();
-                            markTouched("label");
-                        }}
                     />
-
-                    {labelError ? (
-                        <p
-                            id="adjustmentLabel-error"
-                            role="alert"
-                            className="text-sm leading-5 text-destructive"
-                        >
-                            {labelError}
-                        </p>
-                    ) : (
-                        <p
-                            id="adjustmentLabel-help"
-                            className="text-sm leading-5 text-muted-foreground"
-                        >
-                            Use the wording
-                            printed on the
-                            receipt.
-                        </p>
-                    )}
                 </div>
             ) : null}
 

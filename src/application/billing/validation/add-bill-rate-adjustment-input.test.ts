@@ -173,34 +173,37 @@ describe(
             ).toBe(true);
         });
 
-        it("rejects a blank label", () => {
-            const result =
-                addBillRateAdjustmentInputSchema.safeParse(
+        it("uses the type label when a custom label is blank", () => {
+            expect(
+                addBillRateAdjustmentInputSchema.parse(
                     {
                         billId,
                         type: "tax",
                         label: "   ",
                         percentage: "6",
                     },
-                );
+                ),
+            ).toMatchObject({
+                type: "tax",
+                label: "Tax / SST",
+                rateBasisPoints: 600,
+            });
+        });
 
-            expect(result.success).toBe(false);
-
-            if (result.success) {
-                throw new Error(
-                    "Expected validation to fail.",
-                );
-            }
-
+        it("uses the type label when the custom label is omitted", () => {
             expect(
-                result.error.issues,
-            ).toContainEqual(
-                expect.objectContaining({
-                    path: ["label"],
-                    message:
-                        "Enter an adjustment label.",
-                }),
-            );
+                addBillRateAdjustmentInputSchema.parse(
+                    {
+                        billId,
+                        type: "discount",
+                        percentage: "10",
+                    },
+                ),
+            ).toMatchObject({
+                type: "discount",
+                label: "Discount",
+                rateBasisPoints: -1_000,
+            });
         });
 
         it("prepares a selected-item percentage adjustment", () => {

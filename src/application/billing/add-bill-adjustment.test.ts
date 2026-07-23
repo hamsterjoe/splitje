@@ -162,22 +162,16 @@ describe("addBillAdjustment", () => {
                 dependencies,
             );
 
-        expect(result.success).toBe(false);
+        expect(result.success).toBe(true);
 
-        if (
-            result.success ||
-            result.error.type !==
-            "validation_error"
-        ) {
-            throw new Error(
-                "Expected a validation error.",
-            );
-        }
-
-        expect(result.error.issues).toContainEqual({
-            path: "label",
-            message:
-                "Enter an adjustment label.",
+        expect(
+            dependencies
+                .addBillAdjustmentRecord,
+        ).toHaveBeenCalledWith({
+            billId,
+            type: "service_charge",
+            label: "Service charge",
+            amountSen: 1_000,
         });
     });
 
