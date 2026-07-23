@@ -54,7 +54,6 @@ type CalculationMethod =
 type AdjustmentField =
     | "calculationMethod"
     | "type"
-    | "label"
     | "amount"
     | "percentage"
     | "direction"
@@ -764,22 +763,14 @@ export function AddAdjustmentForm({
                             getDefaultBillAdjustmentLabel(
                                 type,
                             )
-                        } value={label}
-                        aria-describedby="adjustmentLabel-help"
-                        className="
-                        h-11 bg-card
-                        aria-invalid:border-destructive
-                        aria-invalid:ring-destructive/20
-                    "
+                        }
+                        value={label}
+                        className="h-11 bg-card"
                         onChange={(event) => {
                             setLabel(
                                 event.target.value,
                             );
-                            markTouched("label");
                             markEdited();
-                        }}
-                        onBlur={() => {
-                            markTouched("label");
                         }}
                     />
                 </div>

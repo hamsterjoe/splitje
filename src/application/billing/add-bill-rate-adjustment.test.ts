@@ -166,4 +166,34 @@ describe("addBillRateAdjustment", () => {
             },
         });
     });
+
+    it("uses the type default for a blank label", async () => {
+        const dependencies =
+            createDependencies();
+
+        const result =
+            await addBillRateAdjustment(
+                {
+                    billId,
+                    type: "tax",
+                    label: "   ",
+                    percentage: "6",
+                },
+                dependencies,
+            );
+
+        expect(result.success).toBe(true);
+
+        expect(
+            dependencies
+                .addBillRateAdjustmentRecord,
+        ).toHaveBeenCalledWith(
+            expect.objectContaining({
+                billId,
+                type: "tax",
+                label: "Tax / SST",
+                rateBasisPoints: 600,
+            }),
+        );
+    });
 });

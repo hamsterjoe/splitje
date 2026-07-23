@@ -147,7 +147,7 @@ describe("addBillAdjustment", () => {
         ).not.toHaveBeenCalled();
     });
 
-    it("rejects a blank label", async () => {
+    it("uses the type default for a blank label", async () => {
         const dependencies =
             createDependencies();
 

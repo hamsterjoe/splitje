@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { parseRinggitInput } from "./parse-ringgit-input";
+import { getDefaultBillAdjustmentLabel } from "./get-default-bill-adjustment-label";
 
 const fixedAdjustmentTypeSchema =
     z.enum([
@@ -38,15 +39,9 @@ export const addBillAdjustmentInputSchema =
             type: fixedAdjustmentTypeSchema,
 
             label: z
-                .string({
-                    message:
-                        "Adjustment label is required.",
-                })
+                .string()
                 .trim()
-                .min(1, {
-                    message:
-                        "Enter an adjustment label.",
-                }),
+                .default(""),
 
             amount: adjustmentAmountSchema,
         })
@@ -64,10 +59,17 @@ export const addBillAdjustmentInputSchema =
                         ? -amount
                         : amount;
 
+                const resolvedLabel =
+                    label.length > 0
+                        ? label
+                        : getDefaultBillAdjustmentLabel(
+                            type,
+                        );
+
                 return {
                     billId,
                     type,
-                    label,
+                    label: resolvedLabel,
                     amountSen: signedAmountSen,
                 };
             },

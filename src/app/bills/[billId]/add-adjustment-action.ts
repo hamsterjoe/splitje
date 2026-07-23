@@ -85,7 +85,6 @@ function mapFieldErrors(
             issue.path ===
             "calculationMethod" ||
             issue.path === "type" ||
-            issue.path === "label" ||
             issue.path === "amount" ||
             issue.path ===
             "percentage" ||
