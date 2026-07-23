@@ -33,6 +33,7 @@ describe(
                 calculationBaseMode:
                     "item_subtotal",
                 appliesToAllItems: true,
+                applicableItemIds: null,
             });
         });
 
@@ -56,6 +57,7 @@ describe(
                 calculationBaseMode:
                     "item_subtotal",
                 appliesToAllItems: true,
+                applicableItemIds: null,
             });
         });
 
@@ -79,6 +81,7 @@ describe(
                 calculationBaseMode:
                     "item_subtotal",
                 appliesToAllItems: true,
+                applicableItemIds: null,
             });
         });
 
@@ -198,6 +201,49 @@ describe(
                         "Enter an adjustment label.",
                 }),
             );
+        });
+
+        it("prepares a selected-item percentage adjustment", () => {
+            const itemA =
+                "24e17267-c45e-47aa-ad46-87ea73e0c0ad";
+
+            const itemB =
+                "ef14c672-a698-4912-83c4-16545f64b8e2";
+
+            expect(
+                addBillRateAdjustmentInputSchema.parse(
+                    {
+                        billId,
+                        type: "discount",
+                        label:
+                            "Selected item discount",
+                        percentage: "10",
+                        itemScope: {
+                            scope:
+                                "selected_items",
+                            applicableItemIds: [
+                                itemB,
+                                itemA,
+                            ],
+                        },
+                    },
+                ),
+            ).toEqual({
+                billId,
+                type: "discount",
+                label:
+                    "Selected item discount",
+                calculationMethod: "rate",
+                rateBasisPoints: -1_000,
+                roundingMode: "half_up",
+                calculationBaseMode:
+                    "item_subtotal",
+                appliesToAllItems: false,
+                applicableItemIds: [
+                    itemA,
+                    itemB,
+                ],
+            });
         });
     },
 );

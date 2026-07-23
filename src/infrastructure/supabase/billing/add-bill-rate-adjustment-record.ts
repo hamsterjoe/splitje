@@ -27,6 +27,10 @@ export async function addBillRateAdjustmentRecord(
                     input.roundingMode,
                 p_calculation_base_mode:
                     input.calculationBaseMode,
+                p_applies_to_all_items:
+                    input.appliesToAllItems,
+                p_applicable_item_ids:
+                    input.applicableItemIds ?? [],
             },
         );
 

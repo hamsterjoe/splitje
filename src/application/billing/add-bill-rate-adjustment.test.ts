@@ -64,6 +64,7 @@ describe("addBillRateAdjustment", () => {
             calculationBaseMode:
                 "item_subtotal",
             appliesToAllItems: true,
+            applicableItemIds: null,
         });
     });
 

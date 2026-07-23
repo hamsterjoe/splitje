@@ -446,6 +446,8 @@ export type Database = {
       }
       add_bill_rate_adjustment: {
         Args: {
+          p_applicable_item_ids: string[]
+          p_applies_to_all_items: boolean
           p_bill_id: string
           p_calculation_base_mode: string
           p_label: string

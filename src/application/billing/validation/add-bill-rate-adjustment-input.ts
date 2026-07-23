@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { parsePercentageInput } from "./parse-percentage-input";
+import { adjustmentItemScopeInputSchema } from "./adjustment-item-scope-input";
 
 const rateAdjustmentTypeSchema =
     z.enum([
@@ -61,6 +62,10 @@ export const addBillRateAdjustmentInputSchema =
 
             percentage:
                 adjustmentPercentageSchema,
+
+            itemScope:
+                adjustmentItemScopeInputSchema
+                    .optional(),
         })
         .strict()
         .transform(
@@ -69,11 +74,18 @@ export const addBillRateAdjustmentInputSchema =
                 type,
                 label,
                 percentage,
+                itemScope,
             }) => {
                 const signedRateBasisPoints =
                     type === "discount"
                         ? -percentage
                         : percentage;
+
+                const normalizedScope =
+                    itemScope ?? {
+                        appliesToAllItems: true,
+                        applicableItemIds: null,
+                    };
 
                 return {
                     billId,
@@ -87,7 +99,13 @@ export const addBillRateAdjustmentInputSchema =
                         "half_up" as const,
                     calculationBaseMode:
                         "item_subtotal" as const,
-                    appliesToAllItems: true,
+                    appliesToAllItems:
+                        normalizedScope
+                            .appliesToAllItems,
+
+                    applicableItemIds:
+                        normalizedScope
+                            .applicableItemIds,
                 };
             },
         );
