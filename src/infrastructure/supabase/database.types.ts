@@ -478,6 +478,12 @@ export type Database = {
         }[]
       }
       is_bill_owner: { Args: { target_bill_id: string }; Returns: boolean }
+      remove_bill_adjustment: {
+        Args: { p_adjustment_id: string; p_bill_id: string }
+        Returns: {
+          removed_adjustment_id: string
+        }[]
+      }
       update_bill_printed_total: {
         Args: {
           p_bill_id: string
