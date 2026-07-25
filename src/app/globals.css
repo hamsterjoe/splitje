@@ -185,29 +185,3 @@
     box-shadow: var(--shadow-overlay);
   }
 }
-
-@keyframes splitje-removal-countdown {
-  from {
-    transform: scaleX(1);
-  }
-
-  to {
-    transform: scaleX(0);
-  }
-}
-
-.removal-countdown-progress {
-  transform-origin: left;
-  animation:
-    splitje-removal-countdown
-    4s
-    linear
-    forwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .removal-countdown-progress {
-    animation: none;
-    transform: scaleX(1);
-  }
-}
