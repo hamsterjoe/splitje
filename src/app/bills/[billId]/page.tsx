@@ -16,6 +16,7 @@ import { AddItemForm } from "@/components/add-item-form";
 import { UpdatePrintedTotalForm } from "@/components/update-printed-total-form";
 import { calculateOwnerBillReconciliation } from "@/application/billing/calculate-owner-bill-reconciliation";
 import { RemoveAdjustmentControl } from "@/components/remove-adjustment-control";
+import { EditFixedAdjustmentControl } from "@/components/edit-fixed-adjustment-control";
 
 interface BillPageProps {
     params: Promise<{
@@ -270,43 +271,81 @@ export default async function BillPage({
                                 ) : (
                                     <ul className="flex flex-col divide-y">
                                         {bill.adjustments.map(
-                                            (adjustment) => (
-                                                <li
-                                                    key={adjustment.id}
-                                                    className="flex min-h-16 items-start justify-between gap-3 py-3 first:pt-0 last:pb-0 sm:items-center sm:gap-4"
-                                                >
-                                                    <div className="min-w-0">
-                                                        <p className="break-words font-medium">
-                                                            {adjustment.label}
-                                                        </p>
+                                            (adjustment) => {
+                                                const editableFixedType =
+                                                    adjustment
+                                                        .calculationMethod ===
+                                                        "fixed" &&
+                                                        adjustment.type !==
+                                                        "rounding"
+                                                        ? adjustment.type
+                                                        : null;
 
-                                                        <p className="mt-1 break-words text-sm text-muted-foreground">
-                                                            {formatAdjustmentDescription(
-                                                                adjustment,
-                                                            )}
-                                                        </p>
-                                                    </div>
+                                                return (
+                                                    <li
+                                                        key={
+                                                            adjustment.id
+                                                        }
+                                                        className="py-3 first:pt-0 last:pb-0"
+                                                    >
+                                                        <div className="flex min-h-16 items-start justify-between gap-4">
+                                                            <div className="min-w-0">
+                                                                <p className="break-words font-medium">
+                                                                    {
+                                                                        adjustment.label
+                                                                    }
+                                                                </p>
 
-                                                    <div className="flex shrink-0 flex-col items-end gap-1">
-                                                        <p className="font-semibold tabular-nums">
-                                                            {formatSignedMoney(
-                                                                adjustment.amountSen,
-                                                                bill.currency,
-                                                            )}
-                                                        </p>
+                                                                <p className="mt-1 break-words text-sm text-muted-foreground">
+                                                                    {formatAdjustmentDescription(
+                                                                        adjustment,
+                                                                    )}
+                                                                </p>
+                                                            </div>
 
-                                                        <RemoveAdjustmentControl
-                                                            billId={bill.id}
-                                                            adjustmentId={
-                                                                adjustment.id
-                                                            }
-                                                            adjustmentLabel={
-                                                                adjustment.label
-                                                            }
-                                                        />
-                                                    </div>
-                                                </li>
-                                            ),
+                                                            <p className="shrink-0 font-semibold tabular-nums">
+                                                                {formatSignedMoney(
+                                                                    adjustment
+                                                                        .amountSen,
+                                                                    bill.currency,
+                                                                )}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="mt-1 flex flex-wrap items-start justify-end gap-1">
+                                                            {editableFixedType !== null ? (
+                                                                <EditFixedAdjustmentControl
+                                                                    billId={bill.id}
+                                                                    adjustmentId={
+                                                                        adjustment.id
+                                                                    }
+                                                                    adjustmentType={
+                                                                        editableFixedType
+                                                                    }
+                                                                    adjustmentLabel={
+                                                                        adjustment.label
+                                                                    }
+                                                                    amountSen={
+                                                                        adjustment.amountSen
+                                                                    }
+                                                                />
+                                                            ) : null}
+
+                                                            <RemoveAdjustmentControl
+                                                                billId={
+                                                                    bill.id
+                                                                }
+                                                                adjustmentId={
+                                                                    adjustment.id
+                                                                }
+                                                                adjustmentLabel={
+                                                                    adjustment.label
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </li>
+                                                );
+                                            },
                                         )}
                                     </ul>
                                 )}
