@@ -15,6 +15,7 @@ import { formatAdjustmentDescription } from "./format-adjustment-description";
 import { AddItemForm } from "@/components/add-item-form";
 import { UpdatePrintedTotalForm } from "@/components/update-printed-total-form";
 import { calculateOwnerBillReconciliation } from "@/application/billing/calculate-owner-bill-reconciliation";
+import { RemoveAdjustmentControl } from "@/components/remove-adjustment-control";
 
 interface BillPageProps {
     params: Promise<{
@@ -272,7 +273,7 @@ export default async function BillPage({
                                             (adjustment) => (
                                                 <li
                                                     key={adjustment.id}
-                                                    className="flex min-h-16 items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                                                    className="flex min-h-16 items-start justify-between gap-3 py-3 first:pt-0 last:pb-0 sm:items-center sm:gap-4"
                                                 >
                                                     <div className="min-w-0">
                                                         <p className="break-words font-medium">
@@ -286,12 +287,24 @@ export default async function BillPage({
                                                         </p>
                                                     </div>
 
-                                                    <p className="shrink-0 font-semibold tabular-nums">
-                                                        {formatSignedMoney(
-                                                            adjustment.amountSen,
-                                                            bill.currency,
-                                                        )}
-                                                    </p>
+                                                    <div className="flex shrink-0 flex-col items-end gap-1">
+                                                        <p className="font-semibold tabular-nums">
+                                                            {formatSignedMoney(
+                                                                adjustment.amountSen,
+                                                                bill.currency,
+                                                            )}
+                                                        </p>
+
+                                                        <RemoveAdjustmentControl
+                                                            billId={bill.id}
+                                                            adjustmentId={
+                                                                adjustment.id
+                                                            }
+                                                            adjustmentLabel={
+                                                                adjustment.label
+                                                            }
+                                                        />
+                                                    </div>
                                                 </li>
                                             ),
                                         )}
