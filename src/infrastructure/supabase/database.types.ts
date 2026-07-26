@@ -508,6 +508,16 @@ export type Database = {
           updated_adjustment_id: string
         }[]
       }
+      update_bill_rounding_adjustment: {
+        Args: {
+          p_adjustment_id: string
+          p_amount_sen: number
+          p_bill_id: string
+        }
+        Returns: {
+          updated_adjustment_id: string
+        }[]
+      }
       update_fixed_bill_adjustment: {
         Args: {
           p_adjustment_id: string
