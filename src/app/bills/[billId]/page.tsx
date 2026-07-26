@@ -17,6 +17,7 @@ import { UpdatePrintedTotalForm } from "@/components/update-printed-total-form";
 import { calculateOwnerBillReconciliation } from "@/application/billing/calculate-owner-bill-reconciliation";
 import { RemoveAdjustmentControl } from "@/components/remove-adjustment-control";
 import { EditFixedAdjustmentControl } from "@/components/edit-fixed-adjustment-control";
+import { EditRateAdjustmentControl } from "@/components/edit-rate-adjustment-control";
 
 interface BillPageProps {
     params: Promise<{
@@ -45,6 +46,15 @@ export default async function BillPage({
         calculateOwnerBillReconciliation(bill);
 
     const hasItems = bill.items.length > 0;
+
+    const adjustmentScopeItems =
+        bill.items.map((item) => ({
+            id: item.id,
+            description:
+                item.description,
+            lineTotalSen:
+                item.lineTotalSen,
+        }));
 
     return (
         <main
@@ -281,6 +291,29 @@ export default async function BillPage({
                                                         ? adjustment.type
                                                         : null;
 
+                                                const editableRate =
+                                                    adjustment
+                                                        .calculationMethod ===
+                                                        "rate" &&
+                                                        adjustment.type !==
+                                                        "rounding" &&
+                                                        adjustment
+                                                            .rateBasisPoints !==
+                                                        null &&
+                                                        adjustment.roundingMode ===
+                                                        "half_up" &&
+                                                        adjustment
+                                                            .calculationBaseMode ===
+                                                        "item_subtotal"
+                                                        ? {
+                                                            type:
+                                                                adjustment.type,
+                                                            rateBasisPoints:
+                                                                adjustment
+                                                                    .rateBasisPoints,
+                                                        }
+                                                        : null;
+
                                                 return (
                                                     <li
                                                         key={
@@ -327,6 +360,39 @@ export default async function BillPage({
                                                                     }
                                                                     amountSen={
                                                                         adjustment.amountSen
+                                                                    }
+                                                                />
+                                                            ) : null}
+
+                                                            {editableRate !== null ? (
+                                                                <EditRateAdjustmentControl
+                                                                    billId={bill.id}
+                                                                    adjustmentId={
+                                                                        adjustment.id
+                                                                    }
+                                                                    adjustmentType={
+                                                                        editableRate.type
+                                                                    }
+                                                                    adjustmentLabel={
+                                                                        adjustment.label
+                                                                    }
+                                                                    rateBasisPoints={
+                                                                        editableRate
+                                                                            .rateBasisPoints
+                                                                    }
+                                                                    appliesToAllItems={
+                                                                        adjustment
+                                                                            .appliesToAllItems
+                                                                    }
+                                                                    applicableItemIds={
+                                                                        adjustment
+                                                                            .applicableItemIds
+                                                                    }
+                                                                    currency={
+                                                                        bill.currency
+                                                                    }
+                                                                    items={
+                                                                        adjustmentScopeItems
                                                                     }
                                                                 />
                                                             ) : null}
