@@ -494,6 +494,20 @@ export type Database = {
           updated_row_version: number
         }[]
       }
+      update_bill_rate_adjustment: {
+        Args: {
+          p_adjustment_id: string
+          p_applicable_item_ids: string[]
+          p_applies_to_all_items: boolean
+          p_bill_id: string
+          p_label: string
+          p_rate_basis_points: number
+        }
+        Returns: {
+          calculated_amount_sen: number
+          updated_adjustment_id: string
+        }[]
+      }
       update_fixed_bill_adjustment: {
         Args: {
           p_adjustment_id: string
