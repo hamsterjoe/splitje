@@ -186,23 +186,32 @@ export function AddItemForm({
                             : undefined
                     }
                     className="
-            h-11 bg-card
-            aria-invalid:border-destructive
-            aria-invalid:ring-destructive/20
-          "
+                        h-11 bg-card
+                        aria-invalid:border-destructive
+                        aria-invalid:ring-destructive/20
+                    "
                     onChange={(event) => {
                         setDescription(
                             event.target.value,
                         );
-                        markTouched("description");
+
+                        if (
+                            state.fieldErrors
+                                .description !==
+                            undefined
+                        ) {
+                            markTouched(
+                                "description",
+                            );
+                        }
+
                         markEdited();
-                    }}
-                    onBlur={() => {
-                        markTouched("description");
                     }}
                     onInvalid={(event) => {
                         event.preventDefault();
-                        markTouched("description");
+                        markTouched(
+                            "description",
+                        );
                     }}
                 />
 
@@ -242,23 +251,32 @@ export function AddItemForm({
                                 : undefined
                         }
                         className="
-              h-11 bg-card tabular-nums
-              aria-invalid:border-destructive
-              aria-invalid:ring-destructive/20
-            "
+                            h-11 bg-card tabular-nums
+                            aria-invalid:border-destructive
+                            aria-invalid:ring-destructive/20
+                        "
                         onChange={(event) => {
                             setQuantity(
                                 event.target.value,
                             );
-                            markTouched("quantity");
+
+                            if (
+                                state.fieldErrors
+                                    .quantity !==
+                                undefined
+                            ) {
+                                markTouched(
+                                    "quantity",
+                                );
+                            }
+
                             markEdited();
-                        }}
-                        onBlur={() => {
-                            markTouched("quantity");
                         }}
                         onInvalid={(event) => {
                             event.preventDefault();
-                            markTouched("quantity");
+                            markTouched(
+                                "quantity",
+                            );
                         }}
                     />
 
@@ -298,23 +316,32 @@ export function AddItemForm({
                                 : "itemUnitPrice-help"
                         }
                         className="
-              h-11 bg-card tabular-nums
-              aria-invalid:border-destructive
-              aria-invalid:ring-destructive/20
-            "
+                            h-11 bg-card tabular-nums
+                            aria-invalid:border-destructive
+                            aria-invalid:ring-destructive/20
+                        "
                         onChange={(event) => {
                             setUnitPrice(
                                 event.target.value,
                             );
-                            markTouched("unitPrice");
+
+                            if (
+                                state.fieldErrors
+                                    .unitPrice !==
+                                undefined
+                            ) {
+                                markTouched(
+                                    "unitPrice",
+                                );
+                            }
+
                             markEdited();
-                        }}
-                        onBlur={() => {
-                            markTouched("unitPrice");
                         }}
                         onInvalid={(event) => {
                             event.preventDefault();
-                            markTouched("unitPrice");
+                            markTouched(
+                                "unitPrice",
+                            );
                         }}
                     />
 

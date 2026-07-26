@@ -57,7 +57,7 @@ export async function addParticipantAction(
         status: "error",
         message:
           Object.keys(fieldErrors).length > 0
-            ? "Check the highlighted field and try again."
+            ? null
             : "Unable to add this person.",
         fieldErrors,
       };
@@ -69,7 +69,7 @@ export async function addParticipantAction(
       fieldErrors: {},
     };
   }
-  
+
   if (typeof billId !== "string") {
     return {
       status: "error",
@@ -83,7 +83,7 @@ export async function addParticipantAction(
 
   return {
     status: "success",
-    message: "Person added.",
+    message: null,
     fieldErrors: {},
   };
 }

@@ -50,7 +50,7 @@ export function AddParticipantForm({
 
   const localError =
     displayNameTouched &&
-    displayName.trim().length === 0
+      displayName.trim().length === 0
       ? "Enter a participant name."
       : undefined;
 
@@ -108,11 +108,17 @@ export function AddParticipantForm({
                 event.target.value,
               );
 
-              setDisplayNameTouched(true);
-              setEditedSinceSubmission(true);
-            }}
-            onBlur={() => {
-              setDisplayNameTouched(true);
+              if (
+                serverError !== undefined
+              ) {
+                setDisplayNameTouched(
+                  true,
+                );
+              }
+
+              setEditedSinceSubmission(
+                true,
+              );
             }}
             onInvalid={(event) => {
               event.preventDefault();

@@ -63,7 +63,7 @@ export async function addItemAction(
                 status: "error",
                 message:
                     Object.keys(fieldErrors).length > 0
-                        ? "Check the highlighted fields and try again."
+                        ? null
                         : "Unable to add this item.",
                 fieldErrors,
             };
@@ -89,7 +89,7 @@ export async function addItemAction(
 
     return {
         status: "success",
-        message: "Item added.",
+        message: null,
         fieldErrors: {},
     };
 }
