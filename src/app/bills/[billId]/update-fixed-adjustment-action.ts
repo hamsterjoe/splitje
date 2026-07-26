@@ -93,7 +93,7 @@ export async function updateFixedAdjustmentAction(
                     Object.keys(
                         fieldErrors,
                     ).length > 0
-                        ? "Check the highlighted field and try again."
+                        ? null
                         : "Unable to update this adjustment.",
                 fieldErrors,
             };
@@ -122,8 +122,7 @@ export async function updateFixedAdjustmentAction(
 
     return {
         status: "success",
-        message:
-            "Adjustment updated.",
+        message: null,
         fieldErrors: {},
     };
 }

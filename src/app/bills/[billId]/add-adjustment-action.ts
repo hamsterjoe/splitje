@@ -149,8 +149,7 @@ export async function addAdjustmentAction(
         ) {
             return {
                 status: "error",
-                message:
-                    "Check the highlighted field and try again.",
+                message: null,
                 fieldErrors: {
                     calculationMethod:
                         "Choose fixed amount or percentage.",
@@ -232,7 +231,7 @@ export async function addAdjustmentAction(
                     Object.keys(
                         fieldErrors,
                     ).length > 0
-                        ? "Check the highlighted fields and try again."
+                        ? null
                         : "Unable to add this adjustment.",
                 fieldErrors,
             };
@@ -259,17 +258,9 @@ export async function addAdjustmentAction(
         `/bills/${billId}`,
     );
 
-    const successMessage =
-        type === "rounding"
-            ? "Rounding adjustment added."
-            : rawCalculationMethod ===
-                "rate"
-                ? "Percentage adjustment added."
-                : "Adjustment added.";
-
     return {
         status: "success",
-        message: successMessage,
+        message: null,
         fieldErrors: {},
     };
 }

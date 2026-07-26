@@ -313,8 +313,36 @@ export function AddAdjustmentForm({
         );
     }
 
+    function clearTouched(
+        ...fields: AdjustmentField[]
+    ) {
+        setTouchedFields(
+            (current) => {
+                const next = {
+                    ...current,
+                };
+
+                for (
+                    const field of fields
+                ) {
+                    delete next[field];
+                }
+
+                return next;
+            },
+        );
+    }
+
     function markEdited() {
         setEditedSinceSubmission(true);
+    }
+
+    function getServerFieldError(
+        field: AdjustmentField,
+    ): string | undefined {
+        return editedSinceSubmission
+            ? undefined
+            : state.fieldErrors[field];
     }
 
     const amountResult =
@@ -353,33 +381,44 @@ export function AddAdjustmentForm({
     const typeError =
         touchedFields.type
             ? undefined
-            : state.fieldErrors.type;
+            : getServerFieldError(
+                "type",
+            );
 
     const calculationMethodError =
         touchedFields.calculationMethod
             ? undefined
-            : state.fieldErrors
-                .calculationMethod;
+            : getServerFieldError(
+                "calculationMethod",
+            );
 
     const directionError =
         touchedFields.direction
             ? undefined
-            : state.fieldErrors.direction;
+            : getServerFieldError(
+                "direction",
+            );
 
     const amountError =
         touchedFields.amount
             ? amountLocalError
-            : state.fieldErrors.amount;
+            : getServerFieldError(
+                "amount",
+            );
 
     const percentageError =
         touchedFields.percentage
             ? percentageLocalError
-            : state.fieldErrors.percentage;
+            : getServerFieldError(
+                "percentage",
+            );
 
     const scopeError =
         touchedFields.scope
             ? undefined
-            : state.fieldErrors.scope;
+            : getServerFieldError(
+                "scope",
+            );
 
     const applicableItemIdsLocalError =
         touchedFields.applicableItemIds &&
@@ -388,12 +427,13 @@ export function AddAdjustmentForm({
             ? "Select at least one applicable item."
             : undefined;
 
+
     const applicableItemIdsError =
         touchedFields.applicableItemIds
             ? applicableItemIdsLocalError
-            : state.fieldErrors
-                .applicableItemIds;
-
+            : getServerFieldError(
+                "applicableItemIds",
+            );
     const showStatusMessage =
         state.message !== null &&
         !editedSinceSubmission;
@@ -475,11 +515,10 @@ export function AddAdjustmentForm({
                                 setAmount("0.00");
                             }
 
-                            markTouched("type");
-
-                            markTouched(
-                                "calculationMethod",
-                            );
+                            setTouchedFields({
+                                type: true,
+                                calculationMethod: true,
+                            });
 
                             markEdited();
                         }}
@@ -657,14 +696,43 @@ export function AddAdjustmentForm({
                                     nextMethod,
                                 );
 
-                                if (nextMethod === "fixed") {
-                                    setScope("all_items");
-                                    setSelectedItemIds([]);
-                                }
+                                setTouchedFields(
+                                    (current) => {
+                                        const next: Partial<
+                                            Record<
+                                                AdjustmentField,
+                                                boolean
+                                            >
+                                        > = {
+                                            ...current,
+                                            calculationMethod:
+                                                true,
+                                        };
+
+                                        if (
+                                            nextMethod ===
+                                            "fixed"
+                                        ) {
+                                            delete next.percentage;
+                                            delete next.scope;
+                                            delete next
+                                                .applicableItemIds;
+                                        } else {
+                                            delete next.amount;
+                                        }
+
+                                        return next;
+                                    },
+                                );
 
                                 if (
-                                    nextMethod === "rate" &&
-                                    percentage.trim().length === 0
+                                    nextMethod === "fixed"
+                                ) {
+                                    setScope("all_items");
+                                    setSelectedItemIds([]);
+                                } else if (
+                                    percentage.trim().length ===
+                                    0
                                 ) {
                                     const defaults =
                                         getAdjustmentDefaults(
@@ -676,10 +744,6 @@ export function AddAdjustmentForm({
                                         defaults.percentage,
                                     );
                                 }
-
-                                markTouched(
-                                    "calculationMethod",
-                                );
 
                                 markEdited();
                             }}
@@ -821,15 +885,15 @@ export function AddAdjustmentForm({
                                 ),
                             );
 
-                            markTouched(
-                                "amount",
-                            );
+                            if (
+                                state.fieldErrors.amount !==
+                                undefined
+                            ) {
+                                markTouched(
+                                    "amount",
+                                );
+                            }
                             markEdited();
-                        }}
-                        onBlur={() => {
-                            markTouched(
-                                "amount",
-                            );
                         }}
                         onInvalid={(
                             event,
@@ -900,15 +964,16 @@ export function AddAdjustmentForm({
                                     .value,
                             );
 
-                            markTouched(
-                                "percentage",
-                            );
+                            if (
+                                state.fieldErrors
+                                    .percentage !==
+                                undefined
+                            ) {
+                                markTouched(
+                                    "percentage",
+                                );
+                            }
                             markEdited();
-                        }}
-                        onBlur={() => {
-                            markTouched(
-                                "percentage",
-                            );
                         }}
                         onInvalid={(
                             event,
@@ -983,6 +1048,13 @@ export function AddAdjustmentForm({
                             }
 
                             setScope(nextScope);
+                            if (
+                                nextScope === "all_items"
+                            ) {
+                                clearTouched(
+                                    "applicableItemIds",
+                                );
+                            }
                             markTouched("scope");
                             markEdited();
                         }}
@@ -1044,12 +1116,12 @@ export function AddAdjustmentForm({
                                         <label
                                             key={item.id}
                                             className="
-                                    flex min-h-12
-                                    cursor-pointer
-                                    items-center gap-3
-                                    px-3 py-2
-                                    hover:bg-muted/30
-                                "
+                                                flex min-h-12
+                                                cursor-pointer
+                                                items-center gap-3
+                                                px-3 py-2
+                                                hover:bg-muted/30
+                                            "
                                         >
                                             <input
                                                 type="checkbox"
@@ -1061,10 +1133,10 @@ export function AddAdjustmentForm({
                                                     checked
                                                 }
                                                 className="
-                                        size-4
-                                        shrink-0
-                                        accent-primary
-                                    "
+                                                    size-4
+                                                    shrink-0
+                                                    accent-primary
+                                                "
                                                 onChange={(
                                                     event,
                                                 ) => {
@@ -1088,9 +1160,15 @@ export function AddAdjustmentForm({
                                                                 ),
                                                     );
 
-                                                    markTouched(
-                                                        "applicableItemIds",
-                                                    );
+                                                    if (
+                                                        state.fieldErrors
+                                                            .applicableItemIds !==
+                                                        undefined
+                                                    ) {
+                                                        markTouched(
+                                                            "applicableItemIds",
+                                                        );
+                                                    }
 
                                                     markEdited();
                                                 }}

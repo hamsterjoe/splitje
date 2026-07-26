@@ -131,7 +131,7 @@ export async function updateRateAdjustmentAction(
                     Object.keys(
                         fieldErrors,
                     ).length > 0
-                        ? "Check the highlighted fields and try again."
+                        ? null
                         : "Unable to update this percentage adjustment.",
                 fieldErrors,
             };
@@ -160,8 +160,7 @@ export async function updateRateAdjustmentAction(
 
     return {
         status: "success",
-        message:
-            "Percentage adjustment updated.",
+        message: null,
         fieldErrors: {},
     };
 }

@@ -27,7 +27,7 @@ interface EditFixedAdjustmentControlProps {
     billId: string;
     adjustmentId: string;
     adjustmentType:
-        EditableFixedAdjustmentType;
+    EditableFixedAdjustmentType;
     adjustmentLabel: string;
     amountSen: number;
 }
@@ -126,13 +126,13 @@ export function EditFixedAdjustmentControl({
     const amountResult =
         amountTouched
             ? parseRinggitInput(
-                  amount,
-              )
+                amount,
+            )
             : null;
 
     const amountLocalError =
         amountResult !== null &&
-        !amountResult.success
+            !amountResult.success
             ? amountResult.message
             : undefined;
 
@@ -140,8 +140,8 @@ export function EditFixedAdjustmentControl({
         amountTouched
             ? amountLocalError
             : editedSinceSubmission
-              ? undefined
-              : state.fieldErrors.amount;
+                ? undefined
+                : state.fieldErrors.amount;
 
     const showStatusMessage =
         state.status === "error" &&
@@ -274,11 +274,6 @@ export function EditFixedAdjustmentControl({
                                 true,
                             );
                         }}
-                        onBlur={() => {
-                            setAmountTouched(
-                                true,
-                            );
-                        }}
                         onInvalid={(
                             event,
                         ) => {
@@ -307,7 +302,7 @@ export function EditFixedAdjustmentControl({
                             className="text-sm leading-5 text-muted-foreground"
                         >
                             {adjustmentType ===
-                            "discount"
+                                "discount"
                                 ? "The discount is subtracted automatically."
                                 : "Enter the amount shown on the receipt."}
                         </p>
@@ -366,7 +361,7 @@ function formatSenForInput(
     const ringgit =
         Math.floor(
             absoluteAmountSen /
-                100,
+            100,
         );
 
     const sen =

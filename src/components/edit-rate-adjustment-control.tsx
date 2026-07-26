@@ -388,11 +388,6 @@ export function EditRateAdjustmentControl({
                                 true,
                             );
                         }}
-                        onBlur={() => {
-                            setPercentageTouched(
-                                true,
-                            );
-                        }}
                         onInvalid={(
                             event,
                         ) => {
@@ -596,9 +591,15 @@ export function EditRateAdjustmentControl({
                                                                 ),
                                                     );
 
-                                                    setApplicableItemsTouched(
-                                                        true,
-                                                    );
+                                                    if (
+                                                        state.fieldErrors
+                                                            .applicableItemIds !==
+                                                        undefined
+                                                    ) {
+                                                        setApplicableItemsTouched(
+                                                            true,
+                                                        );
+                                                    }
 
                                                     setEditedSinceSubmission(
                                                         true,

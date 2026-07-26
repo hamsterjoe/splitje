@@ -1,13 +1,12 @@
 export type AddAdjustmentField =
     | "calculationMethod"
     | "type"
-    | "label"
     | "amount"
     | "percentage"
     | "direction"
     | "scope"
     | "applicableItemIds";
-    
+
 export interface AddAdjustmentActionState {
     status:
     | "idle"
