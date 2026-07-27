@@ -21,6 +21,7 @@ import { EditRateAdjustmentControl } from "@/components/edit-rate-adjustment-con
 import { EditRoundingAdjustmentControl } from "@/components/edit-rounding-adjustment-control";
 import { EditItemControl } from "@/components/edit-item-control";
 import { RemoveItemControl } from "@/components/remove-item-control";
+import { EditParticipantControl } from "@/components/edit-participant-control";
 
 interface BillPageProps {
     params: Promise<{
@@ -171,17 +172,33 @@ export default async function BillPage({
                                             (participant) => (
                                                 <li
                                                     key={participant.id}
-                                                    className="flex min-h-14 items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                                                    className="py-3 first:pt-0 last:pb-0"
                                                 >
-                                                    <span className="min-w-0 break-words font-medium">
-                                                        {participant.displayName}
-                                                    </span>
-
-                                                    {participant.isOwner ? (
-                                                        <span className="shrink-0 text-sm text-muted-foreground">
-                                                            Owner
+                                                    <div className="flex min-h-14 items-center justify-between gap-4">
+                                                        <span className="min-w-0 break-words font-medium">
+                                                            {
+                                                                participant.displayName
+                                                            }
                                                         </span>
-                                                    ) : null}
+
+                                                        {participant.isOwner ? (
+                                                            <span className="shrink-0 text-sm text-muted-foreground">
+                                                                Owner
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+
+                                                    <div className="mt-1 flex justify-end">
+                                                        <EditParticipantControl
+                                                            billId={bill.id}
+                                                            participantId={
+                                                                participant.id
+                                                            }
+                                                            displayName={
+                                                                participant.displayName
+                                                            }
+                                                        />
+                                                    </div>
                                                 </li>
                                             ),
                                         )}
