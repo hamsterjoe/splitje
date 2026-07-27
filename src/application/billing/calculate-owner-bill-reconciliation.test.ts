@@ -144,8 +144,17 @@ describe(
                         {
                             id: "adj-a",
                             type: "discount",
-                            label: "No discount",
+                            label: "Discount",
                             amountSen: 0,
+
+                            calculationMethod: "fixed",
+                            rateBasisPoints: null,
+                            roundingMode: null,
+                            calculationBaseMode: null,
+                            amountSource: "manual",
+                            appliesToAllItems: true,
+                            applicableItemIds: [],
+
                             sortOrder: 0,
                             createdAt:
                                 "2026-07-20T08:00:00.000Z",
@@ -192,6 +201,15 @@ describe(
                             type: "service_charge",
                             label: "Service charge",
                             amountSen: 250,
+
+                            calculationMethod: "fixed",
+                            rateBasisPoints: null,
+                            roundingMode: null,
+                            calculationBaseMode: null,
+                            amountSource: "manual",
+                            appliesToAllItems: true,
+                            applicableItemIds: [],
+
                             sortOrder: 0,
                             createdAt:
                                 "2026-07-20T08:01:00.000Z",
@@ -203,6 +221,15 @@ describe(
                             type: "discount",
                             label: "Voucher",
                             amountSen: -50,
+
+                            calculationMethod: "fixed",
+                            rateBasisPoints: null,
+                            roundingMode: null,
+                            calculationBaseMode: null,
+                            amountSource: "manual",
+                            appliesToAllItems: true,
+                            applicableItemIds: [],
+                            
                             sortOrder: 1,
                             createdAt:
                                 "2026-07-20T08:02:00.000Z",
