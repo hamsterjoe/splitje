@@ -19,6 +19,7 @@ import { RemoveAdjustmentControl } from "@/components/remove-adjustment-control"
 import { EditFixedAdjustmentControl } from "@/components/edit-fixed-adjustment-control";
 import { EditRateAdjustmentControl } from "@/components/edit-rate-adjustment-control";
 import { EditRoundingAdjustmentControl } from "@/components/edit-rounding-adjustment-control";
+import { EditItemControl } from "@/components/edit-item-control";
 
 interface BillPageProps {
     params: Promise<{
@@ -213,38 +214,64 @@ export default async function BillPage({
                                     </p>
                                 ) : (
                                     <ul className="flex flex-col divide-y">
-                                        {bill.items.map((item) => (
-                                            <li
-                                                key={item.id}
-                                                className="flex min-h-16 items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
-                                            >
-                                                <div className="min-w-0">
-                                                    <p className="break-words font-medium">
-                                                        {item.description}
-                                                    </p>
+                                        {bill.items.map(
+                                            (item) => (
+                                                <li
+                                                    key={item.id}
+                                                    className="py-3 first:pt-0 last:pb-0"
+                                                >
+                                                    <div className="flex min-h-16 items-start justify-between gap-4">
+                                                        <div className="min-w-0">
+                                                            <p className="break-words font-medium">
+                                                                {
+                                                                    item.description
+                                                                }
+                                                            </p>
 
-                                                    <p className="mt-1 text-sm text-muted-foreground">
-                                                        {formatQuantity(
-                                                            item.quantity,
-                                                        )}
-                                                        {" × "}
-                                                        <span className="tabular-nums">
+                                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                                {formatQuantity(
+                                                                    item.quantity,
+                                                                )}
+                                                                {" × "}
+                                                                <span className="tabular-nums">
+                                                                    {formatMoney(
+                                                                        item.unitPriceSen,
+                                                                        bill.currency,
+                                                                    )}
+                                                                </span>
+                                                            </p>
+                                                        </div>
+
+                                                        <p className="shrink-0 font-semibold tabular-nums">
                                                             {formatMoney(
-                                                                item.unitPriceSen,
+                                                                item.lineTotalSen,
                                                                 bill.currency,
                                                             )}
-                                                        </span>
-                                                    </p>
-                                                </div>
+                                                        </p>
+                                                    </div>
 
-                                                <p className="shrink-0 font-semibold tabular-nums">
-                                                    {formatMoney(
-                                                        item.lineTotalSen,
-                                                        bill.currency,
-                                                    )}
-                                                </p>
-                                            </li>
-                                        ))}
+                                                    <div className="mt-1 flex flex-wrap items-start justify-end gap-1">
+                                                        <EditItemControl
+                                                            billId={
+                                                                bill.id
+                                                            }
+                                                            itemId={
+                                                                item.id
+                                                            }
+                                                            description={
+                                                                item.description
+                                                            }
+                                                            quantity={
+                                                                item.quantity
+                                                            }
+                                                            unitPriceSen={
+                                                                item.unitPriceSen
+                                                            }
+                                                        />
+                                                    </div>
+                                                </li>
+                                            ),
+                                        )}
                                     </ul>
                                 )}
 
