@@ -2,12 +2,11 @@
 
 import {
     useActionState,
-    useEffect,
     useState,
 } from "react";
 
 import { addAdjustmentAction } from "@/app/bills/[billId]/add-adjustment-action";
-import { initialAddAdjustmentActionState } from "@/app/bills/[billId]/add-adjustment-action-state";
+import { initialAddAdjustmentActionState, type AddAdjustmentActionState } from "@/app/bills/[billId]/add-adjustment-action-state";
 import { formatRinggitDigitInput } from "@/application/billing/validation/format-ringgit-digit-input";
 import { parsePercentageInput } from "@/application/billing/validation/parse-percentage-input";
 import { parseRinggitInput } from "@/application/billing/validation/parse-ringgit-input";
@@ -200,11 +199,6 @@ export function AddAdjustmentForm({
     currency,
     items,
 }: AddAdjustmentFormProps) {
-    const [state, formAction] =
-        useActionState(
-            addAdjustmentAction,
-            initialAddAdjustmentActionState,
-        );
 
     const [type, setType] =
         useState<AdjustmentType>(
@@ -269,38 +263,69 @@ export function AddAdjustmentForm({
         setEditedSinceSubmission,
     ] = useState(false);
 
-    useEffect(() => {
-        if (state.status === "success") {
-            const defaults =
-                getAdjustmentDefaults(
-                    "service_charge",
-                    hasItems,
+    const [state, formAction] =
+        useActionState(
+            async (
+                previousState: AddAdjustmentActionState,
+                formData: FormData,
+            ): Promise<AddAdjustmentActionState> => {
+                const nextState =
+                    await addAdjustmentAction(
+                        previousState,
+                        formData,
+                    );
+
+                setEditedSinceSubmission(
+                    false,
                 );
 
-            setType("service_charge");
+                if (
+                    nextState.status ===
+                    "success"
+                ) {
+                    const defaults =
+                        getAdjustmentDefaults(
+                            "service_charge",
+                            hasItems,
+                        );
 
-            setCalculationMethod(
-                defaults.calculationMethod,
-            );
+                    setType(
+                        "service_charge",
+                    );
 
-            setLabel("");
-            setAmount("0.00");
+                    setCalculationMethod(
+                        defaults
+                            .calculationMethod,
+                    );
 
-            setPercentage(
-                defaults.percentage,
-            );
-            setTouchedFields({});
-            setEditedSinceSubmission(
-                false,
-            );
-            setRoundingDirection(
-                "subtract",
-            );
+                    setLabel("");
+                    setAmount("0.00");
 
-            setScope("all_items");
-            setSelectedItemIds([]);
-        }
-    }, [state, hasItems]);
+                    setPercentage(
+                        defaults.percentage,
+                    );
+
+                    setTouchedFields(
+                        {},
+                    );
+
+                    setRoundingDirection(
+                        "subtract",
+                    );
+
+                    setScope(
+                        "all_items",
+                    );
+
+                    setSelectedItemIds(
+                        [],
+                    );
+                }
+
+                return nextState;
+            },
+            initialAddAdjustmentActionState,
+        );
 
     function markTouched(
         field: AdjustmentField,

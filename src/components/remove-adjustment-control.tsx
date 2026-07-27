@@ -2,12 +2,11 @@
 
 import {
     useActionState,
-    useEffect,
     useState,
 } from "react";
 
 import { removeAdjustmentAction } from "@/app/bills/[billId]/remove-adjustment-action";
-import { initialRemoveAdjustmentActionState } from "@/app/bills/[billId]/remove-adjustment-action-state";
+import { initialRemoveAdjustmentActionState, type RemoveAdjustmentActionState } from "@/app/bills/[billId]/remove-adjustment-action-state";
 import { Button } from "@/components/ui/button";
 
 interface RemoveAdjustmentControlProps {
@@ -22,15 +21,6 @@ export function RemoveAdjustmentControl({
     adjustmentLabel,
 }: RemoveAdjustmentControlProps) {
     const [
-        state,
-        formAction,
-        isPending,
-    ] = useActionState(
-        removeAdjustmentAction,
-        initialRemoveAdjustmentActionState,
-    );
-
-    const [
         isConfirming,
         setIsConfirming,
     ] = useState(false);
@@ -40,15 +30,34 @@ export function RemoveAdjustmentControl({
         setHideActionMessage,
     ] = useState(false);
 
-    useEffect(() => {
-        if (
-            state.status === "error"
-        ) {
-            setHideActionMessage(
-                false,
-            );
-        }
-    }, [state]);
+    const [
+        state,
+        formAction,
+        isPending,
+    ] = useActionState(
+        async (
+            previousState: RemoveAdjustmentActionState,
+            formData: FormData,
+        ): Promise<RemoveAdjustmentActionState> => {
+            const nextState =
+                await removeAdjustmentAction(
+                    previousState,
+                    formData,
+                );
+
+            if (
+                nextState.status ===
+                "error"
+            ) {
+                setHideActionMessage(
+                    false,
+                );
+            }
+
+            return nextState;
+        },
+        initialRemoveAdjustmentActionState,
+    );
 
     function startConfirmation() {
         setHideActionMessage(true);

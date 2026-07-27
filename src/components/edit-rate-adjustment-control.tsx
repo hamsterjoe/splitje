@@ -2,13 +2,12 @@
 
 import {
     useActionState,
-    useEffect,
     useId,
     useState,
 } from "react";
 
 import { updateRateAdjustmentAction } from "@/app/bills/[billId]/update-rate-adjustment-action";
-import { initialUpdateRateAdjustmentActionState } from "@/app/bills/[billId]/update-rate-adjustment-action-state";
+import { initialUpdateRateAdjustmentActionState, type UpdateRateAdjustmentActionState } from "@/app/bills/[billId]/update-rate-adjustment-action-state";
 import { getDefaultBillAdjustmentLabel } from "@/application/billing/validation/get-default-bill-adjustment-label";
 import { parsePercentageInput } from "@/application/billing/validation/parse-percentage-input";
 import { Button } from "@/components/ui/button";
@@ -72,15 +71,6 @@ export function EditRateAdjustmentControl({
     currency,
     items,
 }: EditRateAdjustmentControlProps) {
-    const [
-        state,
-        formAction,
-        isPending,
-    ] = useActionState(
-        updateRateAdjustmentAction,
-        initialUpdateRateAdjustmentActionState,
-    );
-
     const formId = useId();
 
     const [
@@ -134,29 +124,45 @@ export function EditRateAdjustmentControl({
         setEditedSinceSubmission,
     ] = useState(false);
 
-    useEffect(() => {
-        if (
-            state.status === "success"
-        ) {
-            setIsEditing(false);
-            setPercentageTouched(false);
-            setScopeTouched(false);
-            setApplicableItemsTouched(
-                false,
-            );
-            setEditedSinceSubmission(
-                false,
-            );
-        }
+    const [
+        state,
+        formAction,
+        isPending,
+    ] = useActionState(
+        async (
+            previousState: UpdateRateAdjustmentActionState,
+            formData: FormData,
+        ): Promise<UpdateRateAdjustmentActionState> => {
+            const nextState =
+                await updateRateAdjustmentAction(
+                    previousState,
+                    formData,
+                );
 
-        if (
-            state.status === "error"
-        ) {
             setEditedSinceSubmission(
                 false,
             );
-        }
-    }, [state]);
+
+            if (
+                nextState.status ===
+                "success"
+            ) {
+                setIsEditing(false);
+                setPercentageTouched(
+                    false,
+                );
+                setScopeTouched(
+                    false,
+                );
+                setApplicableItemsTouched(
+                    false,
+                );
+            }
+
+            return nextState;
+        },
+        initialUpdateRateAdjustmentActionState,
+    );
 
     function resetDraft() {
         setLabel(adjustmentLabel);

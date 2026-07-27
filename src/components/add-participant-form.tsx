@@ -2,12 +2,11 @@
 
 import {
   useActionState,
-  useEffect,
   useState,
 } from "react";
 
 import { addParticipantAction } from "@/app/bills/[billId]/add-participant-action";
-import { initialAddParticipantActionState } from "@/app/bills/[billId]/add-participant-action-state";
+import { initialAddParticipantActionState, type AddParticipantActionState } from "@/app/bills/[billId]/add-participant-action-state";
 import { AddParticipantSubmitButton } from "@/components/add-participant-submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,10 +18,6 @@ interface AddParticipantFormProps {
 export function AddParticipantForm({
   billId,
 }: AddParticipantFormProps) {
-  const [state, formAction] = useActionState(
-    addParticipantAction,
-    initialAddParticipantActionState,
-  );
 
   const [displayName, setDisplayName] =
     useState("");
@@ -37,13 +32,36 @@ export function AddParticipantForm({
     setEditedSinceSubmission,
   ] = useState(false);
 
-  useEffect(() => {
-    if (state.status === "success") {
-      setDisplayName("");
-      setDisplayNameTouched(false);
-      setEditedSinceSubmission(false);
-    }
-  }, [state]);
+  const [state, formAction] =
+    useActionState(
+      async (
+        previousState: AddParticipantActionState,
+        formData: FormData,
+      ): Promise<AddParticipantActionState> => {
+        const nextState =
+          await addParticipantAction(
+            previousState,
+            formData,
+          );
+
+        setEditedSinceSubmission(
+          false,
+        );
+
+        if (
+          nextState.status ===
+          "success"
+        ) {
+          setDisplayName("");
+          setDisplayNameTouched(
+            false,
+          );
+        }
+
+        return nextState;
+      },
+      initialAddParticipantActionState,
+    );
 
   const serverError =
     state.fieldErrors.displayName;

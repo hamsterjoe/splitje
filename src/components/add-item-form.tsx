@@ -2,12 +2,11 @@
 
 import {
     useActionState,
-    useEffect,
     useState,
 } from "react";
 
 import { addItemAction } from "@/app/bills/[billId]/add-item-action";
-import { initialAddItemActionState } from "@/app/bills/[billId]/add-item-action-state";
+import { initialAddItemActionState, type AddItemActionState } from "@/app/bills/[billId]/add-item-action-state";
 import { parseRinggitInput } from "@/application/billing/validation/parse-ringgit-input";
 import { AddItemSubmitButton } from "@/components/add-item-submit-button";
 import { Input } from "@/components/ui/input";
@@ -58,10 +57,6 @@ function getUnitPriceError(
 export function AddItemForm({
     billId,
 }: AddItemFormProps) {
-    const [state, formAction] = useActionState(
-        addItemAction,
-        initialAddItemActionState,
-    );
 
     const [description, setDescription] =
         useState("");
@@ -91,15 +86,38 @@ export function AddItemForm({
         setEditedSinceSubmission,
     ] = useState(false);
 
-    useEffect(() => {
-        if (state.status === "success") {
-            setDescription("");
-            setQuantity("1");
-            setUnitPrice("");
-            setTouchedFields({});
-            setEditedSinceSubmission(false);
-        }
-    }, [state]);
+    const [state, formAction] =
+        useActionState(
+            async (
+                previousState: AddItemActionState,
+                formData: FormData,
+            ): Promise<AddItemActionState> => {
+                const nextState =
+                    await addItemAction(
+                        previousState,
+                        formData,
+                    );
+
+                setEditedSinceSubmission(
+                    false,
+                );
+
+                if (
+                    nextState.status ===
+                    "success"
+                ) {
+                    setDescription("");
+                    setQuantity("1");
+                    setUnitPrice("");
+                    setTouchedFields(
+                        {},
+                    );
+                }
+
+                return nextState;
+            },
+            initialAddItemActionState,
+        );
 
     const descriptionLocalError =
         touchedFields.description &&

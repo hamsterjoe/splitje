@@ -2,13 +2,12 @@
 
 import {
     useActionState,
-    useEffect,
     useId,
     useState,
 } from "react";
 
 import { updateRoundingAdjustmentAction } from "@/app/bills/[billId]/update-rounding-adjustment-action";
-import { initialUpdateRoundingAdjustmentActionState } from "@/app/bills/[billId]/update-rounding-adjustment-action-state";
+import { initialUpdateRoundingAdjustmentActionState, type UpdateRoundingAdjustmentActionState } from "@/app/bills/[billId]/update-rounding-adjustment-action-state";
 import { formatRinggitDigitInput } from "@/application/billing/validation/format-ringgit-digit-input";
 import { parseRinggitInput } from "@/application/billing/validation/parse-ringgit-input";
 import { Button } from "@/components/ui/button";
@@ -45,15 +44,6 @@ export function EditRoundingAdjustmentControl({
     adjustmentId,
     amountSen,
 }: EditRoundingAdjustmentControlProps) {
-    const [
-        state,
-        formAction,
-        isPending,
-    ] = useActionState(
-        updateRoundingAdjustmentAction,
-        initialUpdateRoundingAdjustmentActionState,
-    );
-
     const formId = useId();
 
     const [
@@ -85,25 +75,39 @@ export function EditRoundingAdjustmentControl({
         setEditedSinceSubmission,
     ] = useState(false);
 
-    useEffect(() => {
-        if (
-            state.status === "success"
-        ) {
-            setIsEditing(false);
-            setAmountTouched(false);
-            setEditedSinceSubmission(
-                false,
-            );
-        }
+    const [
+        state,
+        formAction,
+        isPending,
+    ] = useActionState(
+        async (
+            previousState: UpdateRoundingAdjustmentActionState,
+            formData: FormData,
+        ): Promise<UpdateRoundingAdjustmentActionState> => {
+            const nextState =
+                await updateRoundingAdjustmentAction(
+                    previousState,
+                    formData,
+                );
 
-        if (
-            state.status === "error"
-        ) {
             setEditedSinceSubmission(
                 false,
             );
-        }
-    }, [state]);
+
+            if (
+                nextState.status ===
+                "success"
+            ) {
+                setIsEditing(false);
+                setAmountTouched(
+                    false,
+                );
+            }
+
+            return nextState;
+        },
+        initialUpdateRoundingAdjustmentActionState,
+    );
 
     function resetDraft() {
         setDirection(

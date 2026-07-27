@@ -130,8 +130,11 @@ export default async function BillPage({
 
                                 <div className="border-t pt-5">
                                     <UpdatePrintedTotalForm
+                                        key={`${bill.id}:${bill.rowVersion}:${bill.printedTotalSen}`}
                                         billId={bill.id}
-                                        rowVersion={bill.rowVersion}
+                                        rowVersion={
+                                            bill.rowVersion
+                                        }
                                         printedTotalSen={
                                             bill.printedTotalSen
                                         }

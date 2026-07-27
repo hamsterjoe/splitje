@@ -2,12 +2,11 @@
 
 import {
     useActionState,
-    useEffect,
     useState,
 } from "react";
 
 import { updatePrintedTotalAction } from "@/app/bills/[billId]/update-printed-total-action";
-import { initialUpdatePrintedTotalActionState } from "@/app/bills/[billId]/update-printed-total-action-state";
+import { initialUpdatePrintedTotalActionState, type UpdatePrintedTotalActionState } from "@/app/bills/[billId]/update-printed-total-action-state";
 import { parseRinggitInput } from "@/application/billing/validation/parse-ringgit-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,10 +32,6 @@ export function UpdatePrintedTotalForm({
     rowVersion,
     printedTotalSen,
 }: UpdatePrintedTotalFormProps) {
-    const [state, formAction] = useActionState(
-        updatePrintedTotalAction,
-        initialUpdatePrintedTotalActionState,
-    );
 
     const [printedTotal, setPrintedTotal] =
         useState(() =>
@@ -55,19 +50,35 @@ export function UpdatePrintedTotalForm({
         setEditedSinceSubmission,
     ] = useState(false);
 
-    useEffect(() => {
-        setPrintedTotal(
-            formatSenForInput(
-                printedTotalSen,
-            ),
-        );
+    const [state, formAction] =
+        useActionState(
+            async (
+                previousState: UpdatePrintedTotalActionState,
+                formData: FormData,
+            ): Promise<UpdatePrintedTotalActionState> => {
+                const nextState =
+                    await updatePrintedTotalAction(
+                        previousState,
+                        formData,
+                    );
 
-        setPrintedTotalTouched(false);
-        setEditedSinceSubmission(false);
-    }, [
-        printedTotalSen,
-        rowVersion,
-    ]);
+                setEditedSinceSubmission(
+                    false,
+                );
+
+                if (
+                    nextState.status ===
+                    "success"
+                ) {
+                    setPrintedTotalTouched(
+                        false,
+                    );
+                }
+
+                return nextState;
+            },
+            initialUpdatePrintedTotalActionState,
+        );
 
     const localResult =
         printedTotalTouched

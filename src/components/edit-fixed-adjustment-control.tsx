@@ -2,13 +2,12 @@
 
 import {
     useActionState,
-    useEffect,
     useId,
     useState,
 } from "react";
 
 import { updateFixedAdjustmentAction } from "@/app/bills/[billId]/update-fixed-adjustment-action";
-import { initialUpdateFixedAdjustmentActionState } from "@/app/bills/[billId]/update-fixed-adjustment-action-state";
+import { initialUpdateFixedAdjustmentActionState, type UpdateFixedAdjustmentActionState } from "@/app/bills/[billId]/update-fixed-adjustment-action-state";
 import { formatRinggitDigitInput } from "@/application/billing/validation/format-ringgit-digit-input";
 import { getDefaultBillAdjustmentLabel } from "@/application/billing/validation/get-default-bill-adjustment-label";
 import { parseRinggitInput } from "@/application/billing/validation/parse-ringgit-input";
@@ -39,15 +38,6 @@ export function EditFixedAdjustmentControl({
     adjustmentLabel,
     amountSen,
 }: EditFixedAdjustmentControlProps) {
-    const [
-        state,
-        formAction,
-        isPending,
-    ] = useActionState(
-        updateFixedAdjustmentAction,
-        initialUpdateFixedAdjustmentActionState,
-    );
-
     const formId = useId();
 
     const [
@@ -75,25 +65,39 @@ export function EditFixedAdjustmentControl({
         setEditedSinceSubmission,
     ] = useState(false);
 
-    useEffect(() => {
-        if (
-            state.status === "success"
-        ) {
-            setIsEditing(false);
-            setAmountTouched(false);
-            setEditedSinceSubmission(
-                false,
-            );
-        }
+    const [
+        state,
+        formAction,
+        isPending,
+    ] = useActionState(
+        async (
+            previousState: UpdateFixedAdjustmentActionState,
+            formData: FormData,
+        ): Promise<UpdateFixedAdjustmentActionState> => {
+            const nextState =
+                await updateFixedAdjustmentAction(
+                    previousState,
+                    formData,
+                );
 
-        if (
-            state.status === "error"
-        ) {
             setEditedSinceSubmission(
                 false,
             );
-        }
-    }, [state]);
+
+            if (
+                nextState.status ===
+                "success"
+            ) {
+                setIsEditing(false);
+                setAmountTouched(
+                    false,
+                );
+            }
+
+            return nextState;
+        },
+        initialUpdateFixedAdjustmentActionState,
+    );
 
     function startEditing() {
         setLabel(adjustmentLabel);

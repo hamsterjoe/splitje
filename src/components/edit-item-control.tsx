@@ -2,13 +2,12 @@
 
 import {
     useActionState,
-    useEffect,
     useId,
     useState,
 } from "react";
 
 import { updateItemAction } from "@/app/bills/[billId]/update-item-action";
-import { initialUpdateItemActionState } from "@/app/bills/[billId]/update-item-action-state";
+import { initialUpdateItemActionState, type UpdateItemActionState } from "@/app/bills/[billId]/update-item-action-state";
 import { parseRinggitInput } from "@/application/billing/validation/parse-ringgit-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +53,7 @@ function getQuantityError(
         ) ||
         parsedValue <= 0 ||
         parsedValue >
-            POSTGRES_INTEGER_MAX
+        POSTGRES_INTEGER_MAX
     ) {
         return "Enter a positive whole number.";
     }
@@ -80,15 +79,6 @@ export function EditItemControl({
     quantity,
     unitPriceSen,
 }: EditItemControlProps) {
-    const [
-        state,
-        formAction,
-        isPending,
-    ] = useActionState(
-        updateItemAction,
-        initialUpdateItemActionState,
-    );
-
     const formId = useId();
 
     const [
@@ -134,25 +124,39 @@ export function EditItemControl({
         setEditedSinceSubmission,
     ] = useState(false);
 
-    useEffect(() => {
-        if (
-            state.status === "success"
-        ) {
-            setIsEditing(false);
-            setTouchedFields({});
-            setEditedSinceSubmission(
-                false,
-            );
-        }
+    const [
+        state,
+        formAction,
+        isPending,
+    ] = useActionState(
+        async (
+            previousState: UpdateItemActionState,
+            formData: FormData,
+        ): Promise<UpdateItemActionState> => {
+            const nextState =
+                await updateItemAction(
+                    previousState,
+                    formData,
+                );
 
-        if (
-            state.status === "error"
-        ) {
             setEditedSinceSubmission(
                 false,
             );
-        }
-    }, [state]);
+
+            if (
+                nextState.status ===
+                "success"
+            ) {
+                setIsEditing(false);
+                setTouchedFields(
+                    {},
+                );
+            }
+
+            return nextState;
+        },
+        initialUpdateItemActionState,
+    );
 
     function resetDraft() {
         setDraftDescription(
@@ -201,48 +205,48 @@ export function EditItemControl({
 
     const descriptionLocalError =
         touchedFields.description &&
-        draftDescription
-            .trim()
-            .length === 0
+            draftDescription
+                .trim()
+                .length === 0
             ? "Enter an item description."
             : undefined;
 
     const quantityLocalError =
         touchedFields.quantity
             ? getQuantityError(
-                  draftQuantity,
-              )
+                draftQuantity,
+            )
             : undefined;
 
     const unitPriceLocalError =
         touchedFields.unitPrice
             ? getUnitPriceError(
-                  draftUnitPrice,
-              )
+                draftUnitPrice,
+            )
             : undefined;
 
     const descriptionError =
         touchedFields.description
             ? descriptionLocalError
             : editedSinceSubmission
-              ? undefined
-              : state.fieldErrors
+                ? undefined
+                : state.fieldErrors
                     .description;
 
     const quantityError =
         touchedFields.quantity
             ? quantityLocalError
             : editedSinceSubmission
-              ? undefined
-              : state.fieldErrors
+                ? undefined
+                : state.fieldErrors
                     .quantity;
 
     const unitPriceError =
         touchedFields.unitPrice
             ? unitPriceLocalError
             : editedSinceSubmission
-              ? undefined
-              : state.fieldErrors
+                ? undefined
+                : state.fieldErrors
                     .unitPrice;
 
     const showStatusMessage =
