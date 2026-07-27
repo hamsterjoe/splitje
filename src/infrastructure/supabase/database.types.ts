@@ -490,6 +490,16 @@ export type Database = {
           removed_item_id: string
         }[]
       }
+      rename_bill_participant: {
+        Args: {
+          p_bill_id: string
+          p_display_name: string
+          p_participant_id: string
+        }
+        Returns: {
+          updated_participant_id: string
+        }[]
+      }
       update_bill_item: {
         Args: {
           p_bill_id: string
