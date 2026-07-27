@@ -18,6 +18,7 @@ import { calculateOwnerBillReconciliation } from "@/application/billing/calculat
 import { RemoveAdjustmentControl } from "@/components/remove-adjustment-control";
 import { EditFixedAdjustmentControl } from "@/components/edit-fixed-adjustment-control";
 import { EditRateAdjustmentControl } from "@/components/edit-rate-adjustment-control";
+import { EditRoundingAdjustmentControl } from "@/components/edit-rounding-adjustment-control";
 
 interface BillPageProps {
     params: Promise<{
@@ -314,6 +315,21 @@ export default async function BillPage({
                                                         }
                                                         : null;
 
+                                                const canEditRounding =
+                                                    adjustment.type ===
+                                                    "rounding" &&
+                                                    adjustment
+                                                        .calculationMethod ===
+                                                    "fixed" &&
+                                                    adjustment
+                                                        .rateBasisPoints ===
+                                                    null &&
+                                                    adjustment.roundingMode ===
+                                                    null &&
+                                                    adjustment
+                                                        .calculationBaseMode ===
+                                                    null;
+
                                                 return (
                                                     <li
                                                         key={
@@ -393,6 +409,18 @@ export default async function BillPage({
                                                                     }
                                                                     items={
                                                                         adjustmentScopeItems
+                                                                    }
+                                                                />
+                                                            ) : null}
+
+                                                            {canEditRounding ? (
+                                                                <EditRoundingAdjustmentControl
+                                                                    billId={bill.id}
+                                                                    adjustmentId={
+                                                                        adjustment.id
+                                                                    }
+                                                                    amountSen={
+                                                                        adjustment.amountSen
                                                                     }
                                                                 />
                                                             ) : null}
