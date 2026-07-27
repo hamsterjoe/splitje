@@ -20,6 +20,7 @@ import { EditFixedAdjustmentControl } from "@/components/edit-fixed-adjustment-c
 import { EditRateAdjustmentControl } from "@/components/edit-rate-adjustment-control";
 import { EditRoundingAdjustmentControl } from "@/components/edit-rounding-adjustment-control";
 import { EditItemControl } from "@/components/edit-item-control";
+import { RemoveItemControl } from "@/components/remove-item-control";
 
 interface BillPageProps {
     params: Promise<{
@@ -221,7 +222,7 @@ export default async function BillPage({
                                             (item) => (
                                                 <li
                                                     key={item.id}
-                                                    className="py-3 first:pt-0 last:pb-0"
+                                                    className="relative py-3 first:pt-0 last:pb-0"
                                                 >
                                                     <div className="flex min-h-16 items-start justify-between gap-4">
                                                         <div className="min-w-0">
@@ -270,6 +271,11 @@ export default async function BillPage({
                                                             unitPriceSen={
                                                                 item.unitPriceSen
                                                             }
+                                                        />
+
+                                                        <RemoveItemControl
+                                                            billId={bill.id}
+                                                            itemId={item.id}
                                                         />
                                                     </div>
                                                 </li>
