@@ -484,6 +484,19 @@ export type Database = {
           removed_adjustment_id: string
         }[]
       }
+      update_bill_item: {
+        Args: {
+          p_bill_id: string
+          p_description: string
+          p_item_id: string
+          p_line_total_sen: number
+          p_quantity: number
+          p_unit_price_sen: number
+        }
+        Returns: {
+          updated_item_id: string
+        }[]
+      }
       update_bill_printed_total: {
         Args: {
           p_bill_id: string
