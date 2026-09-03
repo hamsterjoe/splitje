@@ -14,6 +14,25 @@ export interface OwnerBillParticipant {
     updatedAt: string;
 }
 
+export type OwnerBillItemAllocationType =
+    | "entire"
+    | "equal"
+    | "quantity"
+    | "percentage"
+    | "custom";
+
+export interface OwnerBillItemAllocation {
+    id: string;
+    participantId: string;
+    allocationType: OwnerBillItemAllocationType;
+    amountSen: number;
+    quantityShare: number | null;
+    percentageBasisPoints: number | null;
+    remainderSen: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface OwnerBillItem {
     id: string;
     description: string;
@@ -21,6 +40,7 @@ export interface OwnerBillItem {
     unitPriceSen: number;
     manualLineTotalSen: number | null;
     lineTotalSen: number;
+    allocations: OwnerBillItemAllocation[];
     sortOrder: number;
     createdAt: string;
     updatedAt: string;

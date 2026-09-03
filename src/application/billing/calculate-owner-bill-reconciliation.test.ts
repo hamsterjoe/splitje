@@ -20,6 +20,7 @@ describe(
                             quantity: 1,
                             unitPriceSen: 500,
                             manualLineTotalSen: null,
+                            allocations: [],
                             lineTotalSen: 500,
                             sortOrder: 1,
                             createdAt:
@@ -33,6 +34,7 @@ describe(
                             quantity: 1,
                             unitPriceSen: 2_000,
                             manualLineTotalSen: null,
+                            allocations: [],
                             lineTotalSen: 2_000,
                             sortOrder: 0,
                             createdAt:
@@ -74,6 +76,7 @@ describe(
                             quantity: 1,
                             unitPriceSen: 2_500,
                             manualLineTotalSen: null,
+                            allocations: [],
                             lineTotalSen: 2_500,
                             sortOrder: 0,
                             createdAt:
@@ -103,6 +106,7 @@ describe(
                             quantity: 1,
                             unitPriceSen: 2_500,
                             manualLineTotalSen: null,
+                            allocations: [],
                             lineTotalSen: 2_500,
                             sortOrder: 0,
                             createdAt:
@@ -132,6 +136,7 @@ describe(
                             quantity: 1,
                             unitPriceSen: 2_500,
                             manualLineTotalSen: null,
+                            allocations: [],
                             lineTotalSen: 2_500,
                             sortOrder: 0,
                             createdAt:
@@ -186,6 +191,7 @@ describe(
                             quantity: 1,
                             unitPriceSen: 2_500,
                             manualLineTotalSen: null,
+                            allocations: [],
                             lineTotalSen: 2_500,
                             sortOrder: 0,
                             createdAt:

@@ -8,6 +8,8 @@ import type {
     OwnerBillAdjustmentAmountSource,
     OwnerBillAdjustmentCalculationMethod,
     OwnerBillItem,
+    OwnerBillItemAllocation,
+    OwnerBillItemAllocationType,
     OwnerBillParticipant,
 } from "../../../application/billing/get-owner-bill";
 import type { Database } from "../database.types";
@@ -50,7 +52,18 @@ export async function getOwnerBillRecord(
       line_total_sen,
       sort_order,
       created_at,
-      updated_at
+      updated_at,
+      item_allocations (
+        id,
+        participant_id,
+        allocation_type,
+        amount_sen,
+        quantity_share,
+        percentage_basis_points,
+        remainder_sen,
+        created_at,
+        updated_at
+      )
     ),
 bill_adjustments (
   id,
@@ -101,9 +114,41 @@ bill_adjustments (
             }))
             .sort(compareParticipants);
 
-    const items: OwnerBillItem[] =
-        data.bill_items
-            .map((item) => ({
+    const mappedItems = data.bill_items.map(
+        (item): OwnerBillItem | null => {
+            const allocations:
+                OwnerBillItemAllocation[] = [];
+
+            for (const allocation of item.item_allocations) {
+                if (
+                    !isOwnerBillItemAllocationType(
+                        allocation.allocation_type,
+                    )
+                ) {
+                    return null;
+                }
+
+                allocations.push({
+                    id: allocation.id,
+                    participantId:
+                        allocation.participant_id,
+                    allocationType:
+                        allocation.allocation_type,
+                    amountSen: allocation.amount_sen,
+                    quantityShare:
+                        allocation.quantity_share,
+                    percentageBasisPoints:
+                        allocation.percentage_basis_points,
+                    remainderSen:
+                        allocation.remainder_sen,
+                    createdAt: allocation.created_at,
+                    updatedAt: allocation.updated_at,
+                });
+            }
+
+            allocations.sort(compareItemAllocations);
+
+            return {
                 id: item.id,
                 description: item.description,
                 quantity: item.quantity,
@@ -111,11 +156,28 @@ bill_adjustments (
                 manualLineTotalSen:
                     item.manual_line_total_sen,
                 lineTotalSen: item.line_total_sen,
+                allocations,
                 sortOrder: item.sort_order,
                 createdAt: item.created_at,
                 updatedAt: item.updated_at,
-            }))
-            .sort(compareItems);
+            };
+        },
+    );
+
+    if (
+        mappedItems.some((item) => item === null)
+    ) {
+        return {
+            success: false,
+        };
+    }
+
+    const items = mappedItems
+        .filter(
+            (item): item is OwnerBillItem =>
+                item !== null,
+        )
+        .sort(compareItems);
 
     const mappedAdjustments =
         data.bill_adjustments.map(
@@ -356,4 +418,32 @@ function compareItems(
     }
 
     return left.id.localeCompare(right.id);
+}
+
+function compareItemAllocations(
+    left: OwnerBillItemAllocation,
+    right: OwnerBillItemAllocation,
+): number {
+    const creationTimeDifference =
+        left.createdAt.localeCompare(
+            right.createdAt,
+        );
+
+    if (creationTimeDifference !== 0) {
+        return creationTimeDifference;
+    }
+
+    return left.id.localeCompare(right.id);
+}
+
+function isOwnerBillItemAllocationType(
+    value: string,
+): value is OwnerBillItemAllocationType {
+    return (
+        value === "entire" ||
+        value === "equal" ||
+        value === "quantity" ||
+        value === "percentage" ||
+        value === "custom"
+    );
 }

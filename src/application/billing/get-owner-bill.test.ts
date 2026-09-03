@@ -20,6 +20,9 @@ const ownerParticipantId =
 const itemId =
     "61aab4ba-1d80-41df-a157-a2daf831df6a";
 
+const allocationId =
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+
 const adjustmentId =
     "a715ef81-d7da-4997-b0e7-98dd5d16bded";
 
@@ -56,6 +59,23 @@ const ownerBill: OwnerBill = {
             unitPriceSen: 1_250,
             manualLineTotalSen: null,
             lineTotalSen: 2_500,
+            allocations: [
+                {
+                    id: allocationId,
+                    participantId:
+                        ownerParticipantId,
+                    allocationType: "entire",
+                    amountSen: 2_500,
+                    quantityShare: null,
+                    percentageBasisPoints:
+                        null,
+                    remainderSen: 0,
+                    createdAt:
+                        "2026-07-19T08:06:00.000Z",
+                    updatedAt:
+                        "2026-07-19T08:06:00.000Z",
+                },
+            ],
             sortOrder: 0,
             createdAt:
                 "2026-07-19T08:05:00.000Z",
