@@ -22,6 +22,13 @@ import { EditRoundingAdjustmentControl } from "@/components/edit-rounding-adjust
 import { EditItemControl } from "@/components/edit-item-control";
 import { RemoveItemControl } from "@/components/remove-item-control";
 import { EditParticipantControl } from "@/components/edit-participant-control";
+import { AssignItemControl } from "@/components/assign-item-control";
+import { calculateOwnerBillItemAllocationStates } from "@/application/billing/calculate-owner-bill-item-allocation-states";
+import type {
+    OwnerBillItem,
+    OwnerBillParticipant,
+} from "@/application/billing/get-owner-bill";
+import type { ItemAllocationSummary } from "@/domain/billing/types";
 
 interface BillPageProps {
     params: Promise<{
@@ -48,6 +55,9 @@ export default async function BillPage({
 
     const reconciliation =
         calculateOwnerBillReconciliation(bill);
+
+    const itemAllocationStates =
+        calculateOwnerBillItemAllocationStates(bill);
 
     const hasItems = bill.items.length > 0;
 
@@ -261,6 +271,17 @@ export default async function BillPage({
                                                                     )}
                                                                 </span>
                                                             </p>
+
+                                                            <p className="mt-1 text-sm text-muted-foreground">
+                                                                {describeItemAssignment(
+                                                                    item,
+                                                                    itemAllocationStates[
+                                                                        item.id
+                                                                    ],
+                                                                    bill.participants,
+                                                                    bill.currency,
+                                                                )}
+                                                            </p>
                                                         </div>
 
                                                         <p className="shrink-0 font-semibold tabular-nums">
@@ -272,6 +293,28 @@ export default async function BillPage({
                                                     </div>
 
                                                     <div className="mt-1 flex flex-wrap items-start justify-end gap-1">
+                                                        <AssignItemControl
+                                                            key={`assign:${item.id}:${item.allocations
+                                                                .map(
+                                                                    (allocation) =>
+                                                                        allocation.id,
+                                                                )
+                                                                .join(",")}`}
+                                                            billId={bill.id}
+                                                            itemId={item.id}
+                                                            participants={bill.participants.map(
+                                                                (participant) => ({
+                                                                    id: participant.id,
+                                                                    displayName:
+                                                                        participant.displayName,
+                                                                }),
+                                                            )}
+                                                            assignedParticipantIds={item.allocations.map(
+                                                                (allocation) =>
+                                                                    allocation.participantId,
+                                                            )}
+                                                        />
+
                                                         <EditItemControl
                                                             billId={
                                                                 bill.id
@@ -662,6 +705,43 @@ function formatMoney(
         currency,
         currencyDisplay: "symbol",
     }).format(amountSen / 100);
+}
+
+function describeItemAssignment(
+    item: OwnerBillItem,
+    summary: ItemAllocationSummary,
+    participants: OwnerBillParticipant[],
+    currency: string,
+): string {
+    if (summary.state === "unassigned") {
+        return "Unassigned";
+    }
+
+    const names = item.allocations.map(
+        (allocation) => {
+            const participant = participants.find(
+                (candidate) =>
+                    candidate.id ===
+                    allocation.participantId,
+            );
+
+            return (
+                participant?.displayName ??
+                "Unknown person"
+            );
+        },
+    );
+
+    const nameList = names.join(", ");
+
+    if (summary.state === "partially_assigned") {
+        return `Partially assigned to ${nameList} · ${formatMoney(
+            summary.remainingSen,
+            currency,
+        )} left`;
+    }
+
+    return `Assigned to ${nameList}`;
 }
 
 function formatSignedMoney(
