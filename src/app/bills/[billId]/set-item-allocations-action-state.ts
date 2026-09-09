@@ -1,4 +1,4 @@
-export type SetItemAllocationsField = "participantIds";
+export type SetItemAllocationsField = "shares";
 
 export interface SetItemAllocationsActionState {
   status: "idle" | "success" | "error";

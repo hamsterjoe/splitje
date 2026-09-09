@@ -19,10 +19,10 @@ function mapFieldErrors(
 
   for (const issue of issues) {
     if (
-      issue.path === "participantIds" ||
-      issue.path.startsWith("participantIds.")
+      issue.path === "shares" ||
+      issue.path.startsWith("shares.")
     ) {
-      fieldErrors.participantIds ??= issue.message;
+      fieldErrors.shares ??= issue.message;
     }
   }
 
@@ -35,12 +35,33 @@ export async function setItemAllocationsAction(
 ): Promise<SetItemAllocationsActionState> {
   const billId = formData.get("billId");
   const itemId = formData.get("itemId");
+  const mode = formData.get("mode");
   const participantIds = formData.getAll("participantIds");
+
+  const valueField =
+    mode === "quantity"
+      ? "quantityShare"
+      : mode === "percentage"
+        ? "percentage"
+        : mode === "custom"
+          ? "amount"
+          : null;
+
+  const shares = participantIds.map((participantId) => ({
+    participantId,
+    value:
+      valueField === null
+        ? undefined
+        : (formData.get(
+            `${valueField}-${String(participantId)}`,
+          ) ?? undefined),
+  }));
 
   const result = await setServerBillItemAllocations({
     billId: billId ?? undefined,
     itemId: itemId ?? undefined,
-    participantIds,
+    mode: mode ?? undefined,
+    shares,
   });
 
   if (!result.success) {

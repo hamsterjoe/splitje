@@ -13,7 +13,10 @@ export async function setBillItemAllocationsRecord(
   const { data, error } = await supabase.rpc("set_bill_item_allocations", {
     p_bill_id: input.billId,
     p_item_id: input.itemId,
-    p_participant_ids: input.participantIds,
+    p_allocations: {
+      mode: input.mode,
+      shares: input.shares,
+    },
   });
 
   const updatedItem = data?.[0];
@@ -26,7 +29,7 @@ export async function setBillItemAllocationsRecord(
       data,
       billId: input.billId,
       itemId: input.itemId,
-      participantIds: input.participantIds,
+      mode: input.mode,
     });
 
     return {

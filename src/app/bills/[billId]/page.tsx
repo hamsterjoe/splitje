@@ -23,6 +23,7 @@ import { EditItemControl } from "@/components/edit-item-control";
 import { RemoveItemControl } from "@/components/remove-item-control";
 import { EditParticipantControl } from "@/components/edit-participant-control";
 import { AssignItemControl } from "@/components/assign-item-control";
+import { RemoveParticipantControl } from "@/components/remove-participant-control";
 import { calculateOwnerBillItemAllocationStates } from "@/application/billing/calculate-owner-bill-item-allocation-states";
 import type {
     OwnerBillItem,
@@ -198,7 +199,7 @@ export default async function BillPage({
                                                         ) : null}
                                                     </div>
 
-                                                    <div className="mt-1 flex justify-end">
+                                                    <div className="mt-1 flex flex-wrap justify-end gap-1">
                                                         <EditParticipantControl
                                                             billId={bill.id}
                                                             participantId={
@@ -208,6 +209,20 @@ export default async function BillPage({
                                                                 participant.displayName
                                                             }
                                                         />
+
+                                                        {participant.isOwner ? null : (
+                                                            <RemoveParticipantControl
+                                                                billId={
+                                                                    bill.id
+                                                                }
+                                                                participantId={
+                                                                    participant.id
+                                                                }
+                                                                displayName={
+                                                                    participant.displayName
+                                                                }
+                                                            />
+                                                        )}
                                                     </div>
                                                 </li>
                                             ),
@@ -302,6 +317,12 @@ export default async function BillPage({
                                                                 .join(",")}`}
                                                             billId={bill.id}
                                                             itemId={item.id}
+                                                            lineTotalSen={
+                                                                item.lineTotalSen
+                                                            }
+                                                            currency={
+                                                                bill.currency
+                                                            }
                                                             participants={bill.participants.map(
                                                                 (participant) => ({
                                                                     id: participant.id,
@@ -309,10 +330,9 @@ export default async function BillPage({
                                                                         participant.displayName,
                                                                 }),
                                                             )}
-                                                            assignedParticipantIds={item.allocations.map(
-                                                                (allocation) =>
-                                                                    allocation.participantId,
-                                                            )}
+                                                            allocations={
+                                                                item.allocations
+                                                            }
                                                         />
 
                                                         <EditItemControl

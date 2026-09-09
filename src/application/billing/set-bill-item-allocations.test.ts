@@ -36,7 +36,7 @@ function createDependencies():
 }
 
 describe("setBillItemAllocations", () => {
-    it("assigns an item to the selected participants", async () => {
+    it("assigns an equal split among selected participants", async () => {
         const dependencies =
             createDependencies();
 
@@ -45,9 +45,16 @@ describe("setBillItemAllocations", () => {
                 {
                     billId,
                     itemId,
-                    participantIds: [
-                        firstParticipantId,
-                        secondParticipantId,
+                    mode: "equal",
+                    shares: [
+                        {
+                            participantId:
+                                firstParticipantId,
+                        },
+                        {
+                            participantId:
+                                secondParticipantId,
+                        },
                     ],
                 },
                 dependencies,
@@ -64,9 +71,24 @@ describe("setBillItemAllocations", () => {
         ).toHaveBeenCalledWith({
             billId,
             itemId,
-            participantIds: [
-                firstParticipantId,
-                secondParticipantId,
+            mode: "equal",
+            shares: [
+                {
+                    participantId:
+                        firstParticipantId,
+                    quantityShare: null,
+                    percentageBasisPoints:
+                        null,
+                    amountSen: null,
+                },
+                {
+                    participantId:
+                        secondParticipantId,
+                    quantityShare: null,
+                    percentageBasisPoints:
+                        null,
+                    amountSen: null,
+                },
             ],
         });
     });
@@ -79,10 +101,20 @@ describe("setBillItemAllocations", () => {
             {
                 billId,
                 itemId,
-                participantIds: [
-                    firstParticipantId,
-                    firstParticipantId,
-                    secondParticipantId,
+                mode: "equal",
+                shares: [
+                    {
+                        participantId:
+                            firstParticipantId,
+                    },
+                    {
+                        participantId:
+                            firstParticipantId,
+                    },
+                    {
+                        participantId:
+                            secondParticipantId,
+                    },
                 ],
             },
             dependencies,
@@ -94,9 +126,24 @@ describe("setBillItemAllocations", () => {
         ).toHaveBeenCalledWith({
             billId,
             itemId,
-            participantIds: [
-                firstParticipantId,
-                secondParticipantId,
+            mode: "equal",
+            shares: [
+                {
+                    participantId:
+                        firstParticipantId,
+                    quantityShare: null,
+                    percentageBasisPoints:
+                        null,
+                    amountSen: null,
+                },
+                {
+                    participantId:
+                        secondParticipantId,
+                    quantityShare: null,
+                    percentageBasisPoints:
+                        null,
+                    amountSen: null,
+                },
             ],
         });
     });
@@ -110,7 +157,8 @@ describe("setBillItemAllocations", () => {
                 {
                     billId,
                     itemId,
-                    participantIds: [],
+                    mode: "equal",
+                    shares: [],
                 },
                 dependencies,
             );
@@ -126,8 +174,306 @@ describe("setBillItemAllocations", () => {
         ).toHaveBeenCalledWith({
             billId,
             itemId,
-            participantIds: [],
+            mode: "equal",
+            shares: [],
         });
+    });
+
+    it("parses quantity shares as whole numbers", async () => {
+        const dependencies =
+            createDependencies();
+
+        const result =
+            await setBillItemAllocations(
+                {
+                    billId,
+                    itemId,
+                    mode: "quantity",
+                    shares: [
+                        {
+                            participantId:
+                                firstParticipantId,
+                            value: "2",
+                        },
+                        {
+                            participantId:
+                                secondParticipantId,
+                            value: "1",
+                        },
+                    ],
+                },
+                dependencies,
+            );
+
+        expect(result).toEqual({
+            success: true,
+            itemId,
+        });
+
+        expect(
+            dependencies
+                .setBillItemAllocationsRecord,
+        ).toHaveBeenCalledWith({
+            billId,
+            itemId,
+            mode: "quantity",
+            shares: [
+                {
+                    participantId:
+                        firstParticipantId,
+                    quantityShare: 2,
+                    percentageBasisPoints:
+                        null,
+                    amountSen: null,
+                },
+                {
+                    participantId:
+                        secondParticipantId,
+                    quantityShare: 1,
+                    percentageBasisPoints:
+                        null,
+                    amountSen: null,
+                },
+            ],
+        });
+    });
+
+    it("rejects a non-numeric quantity", async () => {
+        const dependencies =
+            createDependencies();
+
+        const result =
+            await setBillItemAllocations(
+                {
+                    billId,
+                    itemId,
+                    mode: "quantity",
+                    shares: [
+                        {
+                            participantId:
+                                firstParticipantId,
+                            value: "2",
+                        },
+                        {
+                            participantId:
+                                secondParticipantId,
+                            value: "abc",
+                        },
+                    ],
+                },
+                dependencies,
+            );
+
+        expect(result).toEqual({
+            success: false,
+            error: {
+                type: "validation_error",
+                issues: [
+                    {
+                        path: "shares.1.value",
+                        message:
+                            "Enter a whole-number quantity greater than zero.",
+                    },
+                ],
+            },
+        });
+
+        expect(
+            dependencies
+                .setBillItemAllocationsRecord,
+        ).not.toHaveBeenCalled();
+    });
+
+    it("parses percentages into basis points", async () => {
+        const dependencies =
+            createDependencies();
+
+        const result =
+            await setBillItemAllocations(
+                {
+                    billId,
+                    itemId,
+                    mode: "percentage",
+                    shares: [
+                        {
+                            participantId:
+                                firstParticipantId,
+                            value: "60",
+                        },
+                        {
+                            participantId:
+                                secondParticipantId,
+                            value: "40",
+                        },
+                    ],
+                },
+                dependencies,
+            );
+
+        expect(result).toEqual({
+            success: true,
+            itemId,
+        });
+
+        expect(
+            dependencies
+                .setBillItemAllocationsRecord,
+        ).toHaveBeenCalledWith({
+            billId,
+            itemId,
+            mode: "percentage",
+            shares: [
+                {
+                    participantId:
+                        firstParticipantId,
+                    quantityShare: null,
+                    percentageBasisPoints:
+                        6_000,
+                    amountSen: null,
+                },
+                {
+                    participantId:
+                        secondParticipantId,
+                    quantityShare: null,
+                    percentageBasisPoints:
+                        4_000,
+                    amountSen: null,
+                },
+            ],
+        });
+    });
+
+    it("rejects percentages that do not total 100%", async () => {
+        const dependencies =
+            createDependencies();
+
+        const result =
+            await setBillItemAllocations(
+                {
+                    billId,
+                    itemId,
+                    mode: "percentage",
+                    shares: [
+                        {
+                            participantId:
+                                firstParticipantId,
+                            value: "60",
+                        },
+                        {
+                            participantId:
+                                secondParticipantId,
+                            value: "30",
+                        },
+                    ],
+                },
+                dependencies,
+            );
+
+        expect(result).toEqual({
+            success: false,
+            error: {
+                type: "validation_error",
+                issues: [
+                    {
+                        path: "shares",
+                        message:
+                            "Percentages must add up to exactly 100%.",
+                    },
+                ],
+            },
+        });
+
+        expect(
+            dependencies
+                .setBillItemAllocationsRecord,
+        ).not.toHaveBeenCalled();
+    });
+
+    it("parses custom amounts into sen", async () => {
+        const dependencies =
+            createDependencies();
+
+        const result =
+            await setBillItemAllocations(
+                {
+                    billId,
+                    itemId,
+                    mode: "custom",
+                    shares: [
+                        {
+                            participantId:
+                                firstParticipantId,
+                            value: "12.50",
+                        },
+                    ],
+                },
+                dependencies,
+            );
+
+        expect(result).toEqual({
+            success: true,
+            itemId,
+        });
+
+        expect(
+            dependencies
+                .setBillItemAllocationsRecord,
+        ).toHaveBeenCalledWith({
+            billId,
+            itemId,
+            mode: "custom",
+            shares: [
+                {
+                    participantId:
+                        firstParticipantId,
+                    quantityShare: null,
+                    percentageBasisPoints:
+                        null,
+                    amountSen: 1_250,
+                },
+            ],
+        });
+    });
+
+    it("rejects a zero custom amount", async () => {
+        const dependencies =
+            createDependencies();
+
+        const result =
+            await setBillItemAllocations(
+                {
+                    billId,
+                    itemId,
+                    mode: "custom",
+                    shares: [
+                        {
+                            participantId:
+                                firstParticipantId,
+                            value: "0.00",
+                        },
+                    ],
+                },
+                dependencies,
+            );
+
+        expect(result).toEqual({
+            success: false,
+            error: {
+                type: "validation_error",
+                issues: [
+                    {
+                        path: "shares.0.value",
+                        message:
+                            "Enter an amount greater than zero.",
+                    },
+                ],
+            },
+        });
+
+        expect(
+            dependencies
+                .setBillItemAllocationsRecord,
+        ).not.toHaveBeenCalled();
     });
 
     it("rejects an invalid bill ID", async () => {
@@ -139,8 +485,12 @@ describe("setBillItemAllocations", () => {
                 {
                     billId: "not-a-uuid",
                     itemId,
-                    participantIds: [
-                        firstParticipantId,
+                    mode: "equal",
+                    shares: [
+                        {
+                            participantId:
+                                firstParticipantId,
+                        },
                     ],
                 },
                 dependencies,
@@ -155,43 +505,6 @@ describe("setBillItemAllocations", () => {
                         path: "billId",
                         message:
                             "Bill ID must be a valid UUID.",
-                    },
-                ],
-            },
-        });
-
-        expect(
-            dependencies
-                .setBillItemAllocationsRecord,
-        ).not.toHaveBeenCalled();
-    });
-
-    it("rejects an invalid participant ID", async () => {
-        const dependencies =
-            createDependencies();
-
-        const result =
-            await setBillItemAllocations(
-                {
-                    billId,
-                    itemId,
-                    participantIds: [
-                        firstParticipantId,
-                        "not-a-uuid",
-                    ],
-                },
-                dependencies,
-            );
-
-        expect(result).toEqual({
-            success: false,
-            error: {
-                type: "validation_error",
-                issues: [
-                    {
-                        path: "participantIds.1",
-                        message:
-                            "Participant IDs must be valid UUIDs.",
                     },
                 ],
             },
@@ -219,8 +532,12 @@ describe("setBillItemAllocations", () => {
                 {
                     billId,
                     itemId,
-                    participantIds: [
-                        firstParticipantId,
+                    mode: "equal",
+                    shares: [
+                        {
+                            participantId:
+                                firstParticipantId,
+                        },
                     ],
                 },
                 dependencies,

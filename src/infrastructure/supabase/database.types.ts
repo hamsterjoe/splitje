@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -490,6 +488,12 @@ export type Database = {
           removed_item_id: string
         }[]
       }
+      remove_bill_participant: {
+        Args: { p_bill_id: string; p_participant_id: string }
+        Returns: {
+          removed_participant_id: string
+        }[]
+      }
       rename_bill_participant: {
         Args: {
           p_bill_id: string
@@ -501,11 +505,7 @@ export type Database = {
         }[]
       }
       set_bill_item_allocations: {
-        Args: {
-          p_bill_id: string
-          p_item_id: string
-          p_participant_ids: string[]
-        }
+        Args: { p_allocations: Json; p_bill_id: string; p_item_id: string }
         Returns: {
           set_item_id: string
         }[]
