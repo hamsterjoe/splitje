@@ -29,7 +29,12 @@ import type {
     OwnerBillItem,
     OwnerBillParticipant,
 } from "@/application/billing/get-owner-bill";
-import type { ItemAllocationSummary } from "@/domain/billing/types";
+import { calculateOwnerBillSummary } from "@/application/billing/calculate-owner-bill-summary";
+import type {
+    BillFinalisationBlocker,
+    ItemAllocationSummary,
+    ParticipantFinancialSummary,
+} from "@/domain/billing/types";
 
 interface BillPageProps {
     params: Promise<{
@@ -59,6 +64,18 @@ export default async function BillPage({
 
     const itemAllocationStates =
         calculateOwnerBillItemAllocationStates(bill);
+
+    const billSummary =
+        calculateOwnerBillSummary(bill);
+
+    const participantSummariesById = new Map(
+        billSummary.participantResult.participantSummaries.map(
+            (summary) => [
+                summary.participantId,
+                summary,
+            ],
+        ),
+    );
 
     const hasItems = bill.items.length > 0;
 
@@ -653,6 +670,32 @@ export default async function BillPage({
                                             )}
                                         </p>
                                     </div>
+
+                                    <div className="rounded-lg border bg-muted/30 p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Assigned
+                                        </p>
+
+                                        <p className="mt-1 text-xl font-semibold tabular-nums">
+                                            {formatMoney(
+                                                billSummary.financialState.itemAllocatedSen,
+                                                bill.currency,
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-lg border bg-muted/30 p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Unassigned
+                                        </p>
+
+                                        <p className="mt-1 text-xl font-semibold tabular-nums">
+                                            {formatMoney(
+                                                billSummary.financialState.itemUnassignedSen,
+                                                bill.currency,
+                                            )}
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <div
@@ -700,6 +743,175 @@ export default async function BillPage({
                                     Difference equals calculated total
                                     minus printed total.
                                 </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </section>
+
+                <section aria-labelledby="summary-heading">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                <h2 id="summary-heading">Summary</h2>
+                            </CardTitle>
+
+                            <CardDescription>
+                                What each person owes from the current
+                                assignments.
+                            </CardDescription>
+                        </CardHeader>
+
+                        <CardContent>
+                            <div className="flex flex-col gap-5">
+                                <ul className="flex flex-col divide-y">
+                                    {bill.participants.map((participant) => {
+                                        const participantSummary =
+                                            participantSummariesById.get(
+                                                participant.id,
+                                            );
+
+                                        if (!participantSummary) {
+                                            return null;
+                                        }
+
+                                        const participantItems =
+                                            bill.items.flatMap((item) =>
+                                                item.allocations
+                                                    .filter(
+                                                        (allocation) =>
+                                                            allocation.participantId ===
+                                                            participant.id,
+                                                    )
+                                                    .map((allocation) => ({
+                                                        key: allocation.id,
+                                                        description:
+                                                            item.description,
+                                                        amountSen:
+                                                            allocation.amountSen,
+                                                        shared:
+                                                            item.allocations.length >
+                                                            1,
+                                                    })),
+                                            );
+
+                                        const adjustmentRows =
+                                            participantAdjustmentRows(
+                                                participantSummary,
+                                            );
+
+                                        return (
+                                            <li
+                                                key={participant.id}
+                                                className="py-4 first:pt-0 last:pb-0"
+                                            >
+                                                <div className="flex items-baseline justify-between gap-4">
+                                                    <p className="min-w-0 break-words font-medium">
+                                                        {
+                                                            participant.displayName
+                                                        }
+                                                        {participant.isOwner ? (
+                                                            <span className="text-sm font-normal text-muted-foreground">
+                                                                {" "}
+                                                                (Owner)
+                                                            </span>
+                                                        ) : null}
+                                                    </p>
+
+                                                    <p className="shrink-0 font-semibold tabular-nums">
+                                                        {formatMoney(
+                                                            participantSummary.finalAmountSen,
+                                                            bill.currency,
+                                                        )}
+                                                    </p>
+                                                </div>
+
+                                                {participantItems.length > 0 ? (
+                                                    <ul className="mt-2 flex flex-col gap-1">
+                                                        {participantItems.map(
+                                                            (participantItem) => (
+                                                                <li
+                                                                    key={participantItem.key}
+                                                                    className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground"
+                                                                >
+                                                                    <span className="min-w-0 break-words">
+                                                                        {participantItem.description}
+                                                                        {participantItem.shared
+                                                                            ? " (shared)"
+                                                                            : ""}
+                                                                    </span>
+
+                                                                    <span className="shrink-0 tabular-nums">
+                                                                        {formatMoney(
+                                                                            participantItem.amountSen,
+                                                                            bill.currency,
+                                                                        )}
+                                                                    </span>
+                                                                </li>
+                                                            ),
+                                                        )}
+                                                    </ul>
+                                                ) : (
+                                                    <p className="mt-2 text-sm text-muted-foreground">
+                                                        No items assigned yet.
+                                                    </p>
+                                                )}
+
+                                                {adjustmentRows.length > 0 ? (
+                                                    <ul className="mt-2 flex flex-col gap-1">
+                                                        {adjustmentRows.map(
+                                                            (row) => (
+                                                                <li
+                                                                    key={row.label}
+                                                                    className="flex items-baseline justify-between gap-4 text-sm text-muted-foreground"
+                                                                >
+                                                                    <span>
+                                                                        {row.label}
+                                                                    </span>
+
+                                                                    <span className="shrink-0 tabular-nums">
+                                                                        {formatSignedMoney(
+                                                                            row.amountSen,
+                                                                            bill.currency,
+                                                                        )}
+                                                                    </span>
+                                                                </li>
+                                                            ),
+                                                        )}
+                                                    </ul>
+                                                ) : null}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+
+                                <div className="border-t pt-5">
+                                    {billSummary.financialState.canFinalise ? (
+                                        <p className="text-sm font-medium">
+                                            Ready to finalise — everyone’s
+                                            shares add up to the receipt
+                                            total.
+                                        </p>
+                                    ) : (
+                                        <div>
+                                            <p className="text-sm font-medium">
+                                                Before this bill can be
+                                                finalised:
+                                            </p>
+
+                                            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-5 text-muted-foreground">
+                                                {billSummary.financialState.blockingReasons.map(
+                                                    (reason) => (
+                                                        <li key={reason}>
+                                                            {describeFinalisationBlocker(
+                                                                reason,
+                                                            )}
+                                                        </li>
+                                                    ),
+                                                )}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -762,6 +974,60 @@ function describeItemAssignment(
     }
 
     return `Assigned to ${nameList}`;
+}
+
+function participantAdjustmentRows(
+    summary: ParticipantFinancialSummary,
+): Array<{ label: string; amountSen: number }> {
+    return [
+        {
+            label: "Items subtotal",
+            amountSen: summary.itemSubtotalSen,
+        },
+        {
+            label: "Service charge",
+            amountSen: summary.adjustments.serviceChargeSen,
+        },
+        {
+            label: "Tax / SST",
+            amountSen: summary.adjustments.taxSen,
+        },
+        {
+            label: "Discount",
+            amountSen: summary.adjustments.discountSen,
+        },
+        {
+            label: "Rounding",
+            amountSen: summary.adjustments.roundingSen,
+        },
+        {
+            label: "Other",
+            amountSen: summary.adjustments.otherSen,
+        },
+    ].filter((row) => row.amountSen !== 0);
+}
+
+function describeFinalisationBlocker(
+    reason: BillFinalisationBlocker,
+): string {
+    switch (reason) {
+        case "no_items":
+            return "Add at least one item.";
+        case "receipt_not_reconciled":
+            return "Reconcile the printed and calculated totals.";
+        case "source_totals_mismatch":
+            return "Item and charge totals don't match the receipt calculation.";
+        case "items_not_fully_assigned":
+            return "Fully assign every item.";
+        case "adjustments_not_fully_assigned":
+            return "Fully allocate every charge and discount — assign items first so they can be split proportionally.";
+        case "participant_totals_mismatch":
+            return "Participant totals don't match the assigned amounts.";
+        case "assignment_total_mismatch":
+            return "Participant shares don't add up to the receipt total.";
+        case "negative_participant_total":
+            return "A participant's total is below zero.";
+    }
 }
 
 function formatSignedMoney(

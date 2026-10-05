@@ -112,96 +112,6 @@ function initialAmountValues(
   return values;
 }
 
-function parseQuantityDraft(value: string): number | null {
-  const trimmed = value.trim();
-
-  if (!/^\d{1,9}$/.test(trimmed)) {
-    return null;
-  }
-
-  const parsed = Number(trimmed);
-
-  return parsed > 0 ? parsed : null;
-}
-
-function describeSplit(args: {
-  mode: SplitMode;
-  selectedCount: number;
-  lineTotalSen: number;
-  currency: string;
-  quantityTotal: number;
-  percentageTotalBasisPoints: number;
-  customTotalSen: number;
-}): { text: string; isError: boolean } {
-  const {
-    mode,
-    selectedCount,
-    lineTotalSen,
-    currency,
-    quantityTotal,
-    percentageTotalBasisPoints,
-    customTotalSen,
-  } = args;
-
-  if (selectedCount === 0) {
-    return {
-      text: "No one selected — saving clears this assignment.",
-      isError: false,
-    };
-  }
-
-  if (mode === "equal") {
-    const base = Math.floor(lineTotalSen / selectedCount);
-    const remainder = lineTotalSen - base * selectedCount;
-
-    return {
-      text:
-        remainder === 0
-          ? `${formatMoney(base, currency)} per person.`
-          : `${formatMoney(base + 1, currency)} × ${remainder}, ${formatMoney(base, currency)} × ${selectedCount - remainder}.`,
-      isError: false,
-    };
-  }
-
-  if (mode === "quantity") {
-    return quantityTotal > 0
-      ? {
-          text: `Split across ${quantityTotal} unit${quantityTotal === 1 ? "" : "s"}, proportional to each person's quantity.`,
-          isError: false,
-        }
-      : {
-          text: "Enter a quantity for each selected person.",
-          isError: false,
-        };
-  }
-
-  if (mode === "percentage") {
-    return percentageTotalBasisPoints === 10_000
-      ? { text: "Percentages add up to 100%.", isError: false }
-      : {
-          text: `Percentages add up to ${percentageTotalBasisPoints / 100}% — they must total exactly 100%.`,
-          isError: true,
-        };
-  }
-
-  const remaining = lineTotalSen - customTotalSen;
-
-  if (remaining < 0) {
-    return {
-      text: `Over the item total by ${formatMoney(-remaining, currency)}.`,
-      isError: true,
-    };
-  }
-
-  return {
-    text:
-      remaining === 0
-        ? "Fully assigned."
-        : `${formatMoney(customTotalSen, currency)} assigned · ${formatMoney(remaining, currency)} left unassigned.`,
-    isError: false,
-  };
-}
-
 export function AssignItemControl({
   billId,
   itemId,
@@ -347,27 +257,20 @@ export function AssignItemControl({
     }
   }
 
-  const quantityTotal = selectedParticipantIds.reduce(
-    (sum, participantId) =>
-      sum + (parseQuantityDraft(quantityValues[participantId] ?? "") ?? 0),
-    0,
-  );
-
-  const splitSummary = describeSplit({
-    mode,
-    selectedCount: selectedParticipantIds.length,
-    lineTotalSen,
-    currency,
-    quantityTotal,
-    percentageTotalBasisPoints,
-    customTotalSen,
-  });
-
   const submitBlocked =
     (mode === "percentage" &&
       selectedParticipantIds.length > 0 &&
       percentageTotalBasisPoints !== 10_000) ||
     (mode === "custom" && customTotalSen > lineTotalSen);
+
+  const submitBlockReason =
+    mode === "percentage" &&
+    selectedParticipantIds.length > 0 &&
+    percentageTotalBasisPoints !== 10_000
+      ? "Percentages must add up to exactly 100%."
+      : mode === "custom" && customTotalSen > lineTotalSen
+        ? `Over the item total by ${formatMoney(customTotalSen - lineTotalSen, currency)}.`
+        : null;
 
   const sharesError = editedSinceSubmission
     ? undefined
@@ -505,15 +408,14 @@ export function AssignItemControl({
         </ul>
       </fieldset>
 
-      <p
-        className={`mt-3 text-sm leading-5 ${
-          splitSummary.isError
-            ? "text-destructive"
-            : "text-muted-foreground"
-        }`}
-      >
-        {splitSummary.text}
-      </p>
+      {submitBlockReason ? (
+        <p
+          role="alert"
+          className="mt-3 text-sm leading-5 text-destructive"
+        >
+          {submitBlockReason}
+        </p>
+      ) : null}
 
       {sharesError ? (
         <p
